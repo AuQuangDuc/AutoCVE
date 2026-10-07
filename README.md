@@ -73,6 +73,8 @@ Cần cài Docker Engine và Docker Compose v2. Tại thư mục source AutoCVE 
 docker compose up -d --build
 ```
 
+Frontend Docker sử dụng `npm ci` với `frontend/package-lock.json` để cài đúng phiên bản dependency đã khóa (không cài pnpm toàn cục). Registry mặc định là `https://registry.npmjs.org`. Nếu máy build cần dùng mirror, đặt `NPM_REGISTRY=https://registry.npmmirror.com` trong môi trường hoặc file `.env` ở thư mục gốc rồi build lại. Việc chọn registry không đổi phiên bản package được khóa.
+
 Nếu chưa có repository, bạn có thể tải bản **upstream gốc**:
 
 ```bash
@@ -199,6 +201,7 @@ Khi đổi cấu hình port binding, hãy chạy `docker compose up -d --force-r
 | Xác minh động/sandbox gặp lỗi | Kiểm tra Docker daemon, quyền truy cập socket `/var/run/docker.sock` và image `autocve-sandbox:latest`; chỉ bật xác minh động trong môi trường được phép |
 | One-click CVE không lấy được dự án | Kiểm tra kết nối GitHub, giới hạn API/token và log `one-click-cve-worker` |
 | Dùng image upstream mà vẫn thấy tiếng Trung | Image upstream không chứa bản sửa local; build từ **source đã Việt hóa** bằng `docker compose up -d --build` |
+| Frontend thất bại ở bước cài dependency khi build | Chạy `docker compose --progress plain build frontend` để xem dòng lỗi thực tế trước phần `exit code: 1`; kiểm tra DNS, TLS, dung lượng trống và kết nối tới `NPM_REGISTRY`. Lỗi mạng cần xử lý tại máy build; không xóa lockfile để thử ngẫu nhiên |
 
 **Cảnh báo triển khai:** cấu hình Compose local phục vụ phát triển, có cổng quản trị/database mặc định và mount `/var/run/docker.sock`. Khi đưa vào môi trường sản xuất cần hạn chế cổng public, thêm reverse proxy/TLS, đổi mật khẩu mẫu, bảo vệ secret và kiểm soát chặt quyền chạy sandbox.
 

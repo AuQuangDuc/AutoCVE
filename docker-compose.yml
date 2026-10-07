@@ -218,6 +218,7 @@ services:
         HTTPS_PROXY: ''
         all_proxy: ''
         ALL_PROXY: ''
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmjs.org}
         VITE_ENABLE_CHECKMARX_SCAN: ${VITE_ENABLE_CHECKMARX_SCAN:-false}
         VITE_APP_VERSION: ${VITE_APP_VERSION:-}
     restart: unless-stopped

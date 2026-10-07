@@ -9,6 +9,7 @@ WORKDIR /app
 
 ARG VITE_ENABLE_CHECKMARX_SCAN=false
 ARG VITE_APP_VERSION
+ARG NPM_REGISTRY=https://registry.npmjs.org
 
 # 彻底清除代理设置
 ENV http_proxy=""
@@ -20,18 +21,15 @@ ENV ALL_PROXY=""
 ENV no_proxy="*"
 ENV NO_PROXY="*"
 
-# 配置国内 npm 镜像�?
-RUN npm config set registry https://registry.npmmirror.com && \
-    npm install -g pnpm && \
-    pnpm config set registry https://registry.npmmirror.com
+# Dùng npm đi kèm Node 20 và lockfile đã commit; không phụ thuộc pnpm phiên bản mới nhất.
+COPY package.json package-lock.json ./
 
-# 复制依赖文件
-COPY package.json pnpm-lock.yaml ./
-
-# 增加网络超时设置和并发数限制，防�?ARM 架构构建卡死
-RUN pnpm config set network-timeout 300000 && \
-    pnpm config set fetch-retries 5 && \
-    pnpm install --no-frozen-lockfile --network-concurrency 1
+# Chuyển các URL registry trong lockfile sang registry được chọn, giữ nguyên integrity.
+RUN npm ci --no-audit --no-fund \
+    --registry="${NPM_REGISTRY}" \
+    --replace-registry-host=always \
+    --fetch-retries=5 \
+    --fetch-timeout=300000
 
 # 复制源代�?
 COPY . .
@@ -42,7 +40,7 @@ ENV VITE_ENABLE_CHECKMARX_SCAN=${VITE_ENABLE_CHECKMARX_SCAN}
 ENV VITE_APP_VERSION=${VITE_APP_VERSION}
 
 # 构建生产版本
-RUN pnpm build
+RUN npm run build
 
 # =============================================
 # 生产镜像 - 使用 Nginx (支持 SSE 反向代理)
