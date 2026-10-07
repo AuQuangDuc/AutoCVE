@@ -101,7 +101,15 @@ Cấu hình trên lấy image release `v1.0.5` từ upstream. Kiểm tra kỹ fi
 | Swagger | http://localhost:8000/docs | Khám phá và thử API |
 | Adminer | http://localhost:8080 | Quản trị cơ sở dữ liệu (Compose local) |
 
-Để truy cập từ máy khác trong mạng, thay `localhost` bằng IP hoặc hostname máy chủ và cấu hình firewall phù hợp.
+**Giới hạn truy cập mặc định:** tất cả cổng host được publish trong ba file Compose đều bind vào `127.0.0.1`, không nhận kết nối trực tiếp từ mạng LAN/Internet. Điều này áp dụng cho frontend (`3000`), API (`8000`), và ở bản Compose local còn có Adminer (`8080`), PostgreSQL (`5432`), Redis (`6379`). Backend, worker, database và frontend vẫn trao đổi với nhau qua mạng Docker nội bộ.
+
+Nếu cần truy cập từ máy khác, dùng SSH tunnel hoặc reverse proxy HTTPS chạy trên máy host (upstream trỏ về `127.0.0.1:3000`). Ví dụ từ máy của người quản trị:
+
+```bash
+ssh -L 3000:127.0.0.1:3000 user@dia-chi-may-chu
+```
+
+Sau đó mở `http://localhost:3000` trên máy quản trị. Không cần publish trực tiếp cổng database, Redis, API hay Adminer ra Internet.
 
 ### Yêu cầu môi trường
 
@@ -141,7 +149,7 @@ LLM_BASE_URL=
 - Sinh `SECRET_KEY` ngẫu nhiên cho môi trường thực tế (ví dụ dùng lệnh `openssl rand -hex 32`); không sử dụng giá trị mẫu của `env.example`.
 - Không commit `backend/.env` hoặc công khai API key. Các giá trị `<...>` trong ví dụ là placeholder, **không dùng nguyên mẫu**.
 - Compose local đọc `backend/.env` cho backend/worker và ghi đè các địa chỉ nội bộ DB/Redis; không cần chỉnh `DATABASE_URL` hay `REDIS_URL` trong Compose chỉ để kết nối mặc định.
-- Cấu hình PostgreSQL trong `docker-compose.yml` vẫn dùng tài khoản/mật khẩu phát triển mặc định và ánh xạ cổng `5432`/`6379`. Nếu đưa lên mạng thật, phải giới hạn truy cập, thay thông tin đăng nhập và rà soát cấu hình triển khai trước.
+- Cấu hình PostgreSQL trong `docker-compose.yml` vẫn dùng tài khoản/mật khẩu phát triển mặc định và ánh xạ `5432`/`6379` **chỉ trên localhost**. Nếu đưa lên môi trường dùng chung, cần đổi thông tin đăng nhập, kiểm soát người dùng cục bộ và rà soát cấu hình triển khai trước.
 
 Sau khi chỉnh cấu hình, chạy `docker compose up -d --build` (hoặc `docker compose up -d` khi không cần build lại image) và đăng nhập web. Vào **Cài đặt hệ thống → Cấu hình mô hình** (`/admin`) để kiểm tra provider, model, API key, Base URL và **kiểm tra kết nối**. Một số Agent có thể được cấu hình model riêng; nếu chưa cấu hình riêng, chúng dùng cấu hình toàn cục.
 
@@ -176,6 +184,8 @@ docker compose down
 ```
 
 **Không thêm `-v` vào `docker compose down`** nếu muốn giữ PostgreSQL/Redis/upload volumes. Sao lưu dữ liệu trước khi nâng cấp hoặc thay đổi cấu hình lưu trữ.
+
+Khi đổi cấu hình port binding, hãy chạy `docker compose up -d --force-recreate` để tạo lại container với port mapping mới. Việc thay YAML **không tự cập nhật cổng của container đang chạy**. Xem lại ánh xạ bằng `docker compose ps` hoặc `docker ps --format 'table {{.Names}}\t{{.Ports}}'`.
 
 ### Xử lý lỗi thường gặp
 
