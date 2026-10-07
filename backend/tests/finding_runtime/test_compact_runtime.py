@@ -109,7 +109,7 @@ def test_compact_conversation_uses_model_driven_summary_request_prompt():
         )
     )
 
-    assert client.calls[0]["system_prompt"] == "你是一个负责总结对话的 AI 助手。请使用简体中文总结。"
+    assert client.calls[0]["system_prompt"] == "Bạn là trợ lý AI phụ trách tóm tắt hội thoại. Hãy tóm tắt bằng tiếng Việt."
     assert client.calls[0]["tool_definitions"] == []
     assert client.calls[0]["transcript"][-1].name == "compact_summary_request"
     assert "禁止调用任何工具" in client.calls[0]["transcript"][-1].content

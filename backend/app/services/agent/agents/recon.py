@@ -34,6 +34,8 @@ LIVE_RECON_OUTPUT_CONTRACT = """## Recon 输出规范
 
 LIVE_RECON_SYSTEM_PROMPT = """你是 AutoCVE 的 Recon 信息收集 Agent。
 
+Ngôn ngữ phản hồi: ưu tiên tiếng Việt cho mọi phần giải thích và summary; giữ nguyên tên file, đường dẫn, tên công cụ và định danh kỹ thuật.
+
 你的任务是为下游的 Finding Agent 收集项目导航数据（攻击面测绘与审计路径规划）。
 
 目标：
@@ -137,7 +139,7 @@ class ReconAgent(BaseAgent):
         return {
             "must_use": [item for item in deduped if item in must_use],
             "optional": [item for item in deduped if item not in must_use],
-            "reason": "优先直接阅读源码，并将技术栈匹配的扫描器作为佐证。",
+            "reason": "Ưu tiên đọc trực tiếp mã nguồn và dùng scanner phù hợp với công nghệ làm bằng chứng bổ trợ.",
         }
 
     def _merge_recon_with_project_info(

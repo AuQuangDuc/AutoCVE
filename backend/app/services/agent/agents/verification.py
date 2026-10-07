@@ -28,6 +28,8 @@ logger = logging.getLogger(__name__)
 
 VERIFICATION_SYSTEM_PROMPT = """你是 AutoCVE 的漏洞验证 Agent，一个**自主**的安全验证专家。
 
+Ngôn ngữ phản hồi: ưu tiên tiếng Việt cho chiến lược xác minh, phân tích kết quả, PoC và kết luận; giữ nguyên mã nguồn, payload, đường dẫn, lệnh và định danh kỹ thuật.
+
 ## 你的角色
 你是漏洞验证的**大脑**，不是机械验证器。你需要：
 1. 理解每个漏洞的上下文
@@ -559,7 +561,7 @@ class VerificationAgent(BaseAgent):
             await self.emit_event("warning", "没有需要验证的发现 - 可能是数据格式问题")
             return AgentResult(
                 success=True,
-                data={"findings": [], "verified_count": 0, "note": "未收到待验证的发现"},
+                data={"findings": [], "verified_count": 0, "note": "Không nhận được finding nào cần xác minh"},
             )
         
         # 限制数量
@@ -851,7 +853,7 @@ class VerificationAgent(BaseAgent):
                 )
                 return AgentResult(
                     success=False,
-                    error="任务已取消",
+                    error="Nhiệm vụ đã bị hủy",
                     data={"findings": findings_to_verify},
                     iterations=self._iteration,
                     tool_calls=self._tool_calls,

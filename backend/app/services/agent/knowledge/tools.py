@@ -82,7 +82,7 @@ class SecurityKnowledgeQueryTool(AgentTool):
             if not results:
                 return ToolResult(
                     success=True,
-                    data="未找到相关的安全知识。请尝试使用不同的关键词。",
+                    data="Không tìm thấy tri thức bảo mật liên quan. Hãy thử từ khóa khác.",
                     metadata={"query": query, "results_count": 0},
                 )
             
@@ -116,7 +116,7 @@ class SecurityKnowledgeQueryTool(AgentTool):
             logger.error(f"Knowledge query failed: {e}")
             return ToolResult(
                 success=False,
-                error=f"知识查询失败: {str(e)}",
+                error=f"Truy vấn tri thức thất bại: {str(e)}",
             )
 
 
@@ -180,7 +180,7 @@ class GetVulnerabilityKnowledgeTool(AgentTool):
                 available = security_knowledge_rag.get_all_vulnerability_types()
                 return ToolResult(
                     success=True,
-                    data=f"未找到漏洞类型 '{vulnerability_type}' 的知识。\n\n可用的漏洞类型: {', '.join(available)}",
+                    data=f"Không tìm thấy tri thức cho loại lỗ hổng '{vulnerability_type}'.\n\nLoại lỗ hổng khả dụng: {', '.join(available)}",
                     metadata={"available_types": available},
                 )
 
@@ -236,7 +236,7 @@ class GetVulnerabilityKnowledgeTool(AgentTool):
             logger.error(f"Get vulnerability knowledge failed: {e}")
             return ToolResult(
                 success=False,
-                error=f"获取漏洞知识失败: {str(e)}",
+                error=f"Không thể lấy tri thức lỗ hổng: {str(e)}",
             )
 
     def _detect_code_language(self, content: str) -> Optional[str]:
@@ -314,5 +314,5 @@ class ListKnowledgeModulesTool(AgentTool):
             logger.error(f"List knowledge modules failed: {e}")
             return ToolResult(
                 success=False,
-                error=f"列出知识模块失败: {str(e)}",
+                error=f"Không thể liệt kê mô-đun tri thức: {str(e)}",
             )

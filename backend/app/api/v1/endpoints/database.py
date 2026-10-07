@@ -189,8 +189,8 @@ async def export_database(
         )
         
     except Exception as e:
-        print(f"导出数据失败: {e}")
-        raise HTTPException(status_code=500, detail=f"导出数据失败: {str(e)}")
+        print(f"Xuất dữ liệu thất bại: {e}")
+        raise HTTPException(status_code=500, detail=f"Xuất dữ liệu thất bại: {str(e)}")
 
 
 class DatabaseImportRequest(BaseModel):
@@ -214,13 +214,13 @@ async def import_database(
         import_data = json.loads(content.decode('utf-8'))
         
         if not isinstance(import_data, dict) or "data" not in import_data:
-            raise HTTPException(status_code=400, detail="无效的导入文件格式")
+            raise HTTPException(status_code=400, detail="Định dạng tệp nhập không hợp lệ")
         
         data = import_data["data"]
         
-        # 验证用户ID（只能导入自己的数据）
+        # 验证用户ID（Chỉ có thể nhập dữ liệu của chính bạn）
         if data.get("user", {}).get("id") != current_user.id:
-            raise HTTPException(status_code=403, detail="只能导入自己的数据")
+            raise HTTPException(status_code=403, detail="Chỉ có thể nhập dữ liệu của chính bạn")
         
         imported_count = {
             "projects": 0,
@@ -358,16 +358,16 @@ async def import_database(
         await db.commit()
         
         return {
-            "message": "数据导入成功",
+            "message": "Nhập dữ liệu thành công",
             "imported": imported_count
         }
         
     except json.JSONDecodeError:
-        raise HTTPException(status_code=400, detail="无效的 JSON 文件格式")
+        raise HTTPException(status_code=400, detail="Định dạng tệp JSON không hợp lệ")
     except Exception as e:
-        print(f"导入数据失败: {e}")
+        print(f"Nhập dữ liệu thất bại: {e}")
         await db.rollback()
-        raise HTTPException(status_code=500, detail=f"导入数据失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Nhập dữ liệu thất bại: {str(e)}")
 
 
 @router.delete("/clear")
@@ -453,14 +453,14 @@ async def clear_database(
         await db.commit()
         
         return {
-            "message": "数据已清空",
+            "message": "Đã xóa toàn bộ dữ liệu",
             "deleted": deleted_count
         }
         
     except Exception as e:
-        print(f"清空数据失败: {e}")
+        print(f"Xóa dữ liệu thất bại: {e}")
         await db.rollback()
-        raise HTTPException(status_code=500, detail=f"清空数据失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Xóa dữ liệu thất bại: {str(e)}")
 
 
 class DatabaseStatsResponse(BaseModel):
@@ -582,8 +582,8 @@ async def get_database_stats(
         )
         
     except Exception as e:
-        print(f"获取统计信息失败: {e}")
-        raise HTTPException(status_code=500, detail=f"获取统计信息失败: {str(e)}")
+        print(f"Không thể lấy thông tin thống kê: {e}")
+        raise HTTPException(status_code=500, detail=f"Không thể lấy thông tin thống kê: {str(e)}")
 
 
 class DatabaseHealthResponse(BaseModel):
@@ -616,7 +616,7 @@ async def check_database_health(
             await db.execute(select(1))
         except Exception as e:
             database_connected = False
-            issues.append(f"数据库连接失败: {str(e)}")
+            issues.append(f"Kết nối cơ sở dữ liệu thất bại: {str(e)}")
         
         if database_connected:
             # 2. 统计总记录数
@@ -635,11 +635,11 @@ async def check_database_health(
                 
                 total_records = projects_count + tasks_count + analyses_count
             except Exception as e:
-                warnings.append(f"统计记录数时出错: {str(e)}")
+                warnings.append(f"Lỗi khi thống kê số bản ghi: {str(e)}")
             
             # 3. 检查数据完整性
             try:
-                # 检查孤立的任务（项目不存在）
+                # 检查孤立的任务（Dự án không tồn tại）
                 tasks_result = await db.execute(
                     select(AuditTask).where(AuditTask.created_by == current_user.id)
                 )
@@ -651,9 +651,11 @@ async def check_database_health(
                         orphan_tasks += 1
                 
                 if orphan_tasks > 0:
-                    warnings.append(f"发现 {orphan_tasks} 个孤立任务（关联的项目不存在）")
+                    warnings.append(
+                        f"Phát hiện {orphan_tasks} nhiệm vụ mồ côi (dự án liên kết không tồn tại)"
+                    )
                 
-                # 检查孤立的问题（任务不存在）
+                # 检查孤立的问题（Nhiệm vụ không tồn tại）
                 if tasks:
                     task_ids = [task.id for task in tasks]
                     issues_result = await db.execute(
@@ -667,9 +669,11 @@ async def check_database_health(
                             orphan_issues += 1
                     
                     if orphan_issues > 0:
-                        warnings.append(f"发现 {orphan_issues} 个孤立问题（关联的任务不存在）")
+                        warnings.append(
+                            f"Phát hiện {orphan_issues} vấn đề mồ côi (nhiệm vụ liên kết không tồn tại)"
+                        )
             except Exception as e:
-                warnings.append(f"数据完整性检查时出错: {str(e)}")
+                warnings.append(f"Lỗi khi kiểm tra tính toàn vẹn dữ liệu: {str(e)}")
         
         # 4. 确定健康状态
         if not database_connected or issues:
@@ -689,6 +693,6 @@ async def check_database_health(
         )
         
     except Exception as e:
-        print(f"健康检查失败: {e}")
-        raise HTTPException(status_code=500, detail=f"健康检查失败: {str(e)}")
+        print(f"Kiểm tra sức khỏe thất bại: {e}")
+        raise HTTPException(status_code=500, detail=f"Kiểm tra sức khỏe thất bại: {str(e)}")
 

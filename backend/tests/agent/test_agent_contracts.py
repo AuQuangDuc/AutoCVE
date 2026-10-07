@@ -174,9 +174,9 @@ def test_finding_initial_message_includes_recon_navigation_and_user_scope(findin
     assert "semgrep_scan" in message
     assert "bandit_scan" in message
     assert "audit payment ownership flow" in message
-    assert "请直接审计代码仓库" in message
-    assert "项目信息" in message
-    assert "审计优先级" in message
+    assert "Hãy trực tiếp kiểm tra kho mã" in message
+    assert "Thông tin dự án" in message
+    assert "Ưu tiên kiểm tra" in message
     assert "Review the repository directly" not in message
     assert "Project information:" not in message
 

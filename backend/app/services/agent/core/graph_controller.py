@@ -54,7 +54,7 @@ class AgentGraphController:
             if status in ["completed", "failed", "stopped"]:
                 return {
                     "success": True,
-                    "message": f"Agent '{node['name']}' 已经是 {status} 状态",
+                    "message": f"Agent '{node['name']}' đã ở trạng thái {status}",
                     "previous_status": status,
                 }
             
@@ -78,10 +78,10 @@ class AgentGraphController:
             
             return {
                 "success": True,
-                "message": f"已向 Agent '{node['name']}' 发送停止请求",
+                "message": f"Đã gửi yêu cầu dừng tới Agent '{node['name']}'",
                 "agent_id": agent_id,
                 "agent_name": node["name"],
-                "note": "Agent将在当前迭代完成后停止",
+                "note": "Agent sẽ dừng sau khi hoàn tất vòng lặp hiện tại",
             }
     
     def stop_all_agents(self, exclude_root: bool = True) -> Dict[str, Any]:
@@ -172,7 +172,7 @@ class AgentGraphController:
         return {
             "success": True,
             "message_id": sent_message.id,
-            "message": f"消息已发送到 '{node['name']}'",
+            "message": f"Đã gửi tin nhắn tới '{node['name']}'",
             "target_agent": {
                 "id": target_agent_id,
                 "name": node["name"],
@@ -260,7 +260,7 @@ class AgentGraphController:
             }.get(node.get("status", ""), "❓")
             
             # 当前Agent标记
-            you_marker = " ← 当前" if agent_id == current_agent_id else ""
+            you_marker = " ← hiện tại" if agent_id == current_agent_id else ""
             
             lines.append(f"{indent}{status_emoji} {node['name']} ({agent_id}){you_marker}")
             lines.append(f"{indent}   Task: {node.get('task', 'N/A')[:60]}...")

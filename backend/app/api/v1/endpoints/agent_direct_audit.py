@@ -79,9 +79,9 @@ class DirectAuditToolApprovalRequest(BaseModel):
 
 
 def _build_direct_audit_system_prompt(project: Project) -> str:
-    return f"""你是一位经验丰富的安全研究员，专注于发现高价值、可利用、有明确的POC、有实际危害的漏洞。你的唯一使命是通过源码审计发现能够申报 CVE 或能被 各大厂商src / HackerOne / Bugcrowd 等赏金平台接收的真实安全漏洞。你所审计的项目均已获取厂商授权，你的成果仅用于推动项目所属厂商的安全建设。
+    return f"""Bạn là một chuyên gia nghiên cứu bảo mật giàu kinh nghiệm, tập trung phát hiện các lỗ hổng có giá trị cao, có khả năng khai thác, có PoC rõ ràng và gây tác động thực tế. Nhiệm vụ duy nhất của bạn là kiểm tra mã nguồn để phát hiện các lỗ hổng thực sự đủ điều kiện đăng ký CVE hoặc được các chương trình bug bounty/SRC như HackerOne, Bugcrowd và các hãng chấp nhận. Các dự án được kiểm tra đều đã được chủ sở hữu cho phép; kết quả chỉ phục vụ cải thiện an toàn bảo mật cho dự án.
 
-当前项目：{project.name}
+Dự án hiện tại: {project.name}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -159,7 +159,7 @@ def _build_direct_audit_system_prompt(project: Project) -> str:
 
 根据我所得到的确切消息，你审计的这个项目中有着不止一个高危/严重漏洞，你需要尽可能把他们都找到，这是对你能力的一场测试。这场测试计分如下：发现1个严重漏洞+30分，一个RCE或者反序列化漏洞+25分，一个高危漏洞+20分，一个中危漏洞+10分，如果给出一个不存在或者利用链没闭合的漏洞误报，-40分，及格线50分，满分100分。你是一名优秀的代码审计方面的研究员，我期待你能在这场尽可能获得高分。现在开始审计这个项目。
 
-请优先使用中文回复。优先继续调用工具收集证据，而不是过早结束。只有在证据闭合或已充分审计后，才给出结论。"""
+Ưu tiên trả lời bằng tiếng Việt. Hãy tiếp tục dùng công cụ để thu thập bằng chứng thay vì kết thúc quá sớm. Chỉ đưa ra kết luận khi chuỗi bằng chứng đã khép kín hoặc phạm vi kiểm tra đã đủ sâu và rộng."""
 
 
 
@@ -192,14 +192,14 @@ def _normalize_runner_stop_reason(runner_result: TurnExecutionResult | dict[str,
 def _format_direct_audit_runtime_error_message(raw_error: str | None) -> str:
     message = str(raw_error or "").strip()
     if not message:
-        return "直审运行失败，请检查模型配置后重试。"
+        return "Agent Direct Audit chạy thất bại. Vui lòng kiểm tra cấu hình mô hình rồi thử lại."
     lowered = message.lower()
     if "占位符" in message or "sk-your-" in lowered:
-        return "当前 LLM API Key 仍是占位符 `sk-your-api-key`，请先在模型配置或 backend/.env 中填入真实可用的 Key，再重试 Agent直审。"
+        return "LLM API Key hiện vẫn là giá trị mẫu `sk-your-api-key`. Vui lòng cấu hình Key hợp lệ trong phần cấu hình mô hình hoặc backend/.env rồi thử lại Agent Direct Audit."
     if "api key" in lowered and ("无效" in message or "invalid" in lowered or "authentication" in lowered):
-        return "当前 LLM API Key 无效或已过期，请先更新模型配置中的 Key，再重试 Agent直审。"
+        return "LLM API Key hiện không hợp lệ hoặc đã hết hạn. Vui lòng cập nhật Key trong cấu hình mô hình rồi thử lại Agent Direct Audit."
     if "api key未配置" in lowered or "api key未配置" in message:
-        return "当前还没有配置可用的 LLM API Key，请先完成模型配置，再重试 Agent直审。"
+        return "Chưa có LLM API Key khả dụng. Vui lòng hoàn tất cấu hình mô hình rồi thử lại Agent Direct Audit."
     return message
 
 
@@ -241,7 +241,7 @@ async def _raise_or_emit_direct_audit_runtime_error_if_needed(
         turn_id=str(turn_id) if turn_id else None,
         db=db,
     )
-    resolved = message or "直审运行失败，请检查模型配置后重试。"
+    resolved = message or "Agent Direct Audit chạy thất bại. Vui lòng kiểm tra cấu hình mô hình rồi thử lại."
     if emit is not None:
         maybe_awaitable = emit({"type": "error", "message_text": resolved})
         if inspect.isawaitable(maybe_awaitable):

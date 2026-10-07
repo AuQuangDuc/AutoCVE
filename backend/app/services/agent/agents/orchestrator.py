@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 ORCHESTRATOR_SYSTEM_PROMPT = """你是 AutoCVE 的确定性编排 Agent。
+Mọi thông báo và tóm tắt gửi cho người dùng phải ưu tiên tiếng Việt; giữ nguyên tên Agent, tool và state kỹ thuật.
 你不能让 LLM 自行决定主要阶段。
 你必须执行固定流程：
 1. 规划

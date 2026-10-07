@@ -78,7 +78,7 @@ class RunCodeTool(AgentTool):
 - timeout: 超时秒数（默认60，复杂测试可设更长）
 - description: 简短描述代码目的
 
-支持的语言和执行方式：
+Hỗ trợ的语言和执行方式：
 - python: python3 -c 'code'
 - php: php -r 'code'  (注意：不需要 <?php 标签)
 - javascript: node -e 'code'
@@ -147,8 +147,8 @@ for payload in payloads:
         if not self.sandbox_manager.is_available:
             return ToolResult(
                 success=False,
-                error="沙箱环境不可用 (Docker 未运行)",
-                data="请确保 Docker 已启动。如果无法使用沙箱，你可以通过静态分析代码来验证漏洞。"
+                error="Sandbox không khả dụng (Docker chưa chạy)",
+                data="Hãy đảm bảo Docker đã khởi động. Nếu không thể dùng sandbox, có thể xác minh lỗ hổng bằng phân tích tĩnh."
             )
 
         # 构建执行命令
@@ -158,8 +158,8 @@ for payload in payloads:
         if command is None:
             return ToolResult(
                 success=False,
-                error=f"不支持的语言: {language}",
-                data=f"支持的语言: python, php, javascript, ruby, go, java, bash"
+                error=f"Ngôn ngữ không được hỗ trợ: {language}",
+                data="Ngôn ngữ được hỗ trợ: python, php, javascript, ruby, go, java, bash"
             )
 
         # 在沙箱中执行
@@ -169,17 +169,17 @@ for payload in payloads:
         )
 
         # 格式化输出
-        output_parts = [f"🔬 代码执行结果"]
+        output_parts = ["🔬 Kết quả thực thi mã"]
         if description:
-            output_parts.append(f"目的: {description}")
-        output_parts.append(f"语言: {language}")
-        output_parts.append(f"退出码: {result['exit_code']}")
+            output_parts.append(f"Mục đích: {description}")
+        output_parts.append(f"Ngôn ngữ: {language}")
+        output_parts.append(f"Mã thoát: {result['exit_code']}")
 
         if result.get("stdout"):
             stdout = result["stdout"]
             if len(stdout) > 5000:
-                stdout = stdout[:5000] + f"\n... (截断，共 {len(result['stdout'])} 字符)"
-            output_parts.append(f"\n输出:\n```\n{stdout}\n```")
+                stdout = stdout[:5000] + f"\n... (đã cắt bớt, tổng {len(result['stdout'])} ký tự)"
+            output_parts.append(f"\nĐầu ra:\n```\n{stdout}\n```")
 
         if result.get("stderr"):
             stderr = result["stderr"]
@@ -190,7 +190,7 @@ for payload in payloads:
         if result.get("error"):
             output_parts.append(f"\n执行错误: {result['error']}")
 
-        # 提示 LLM 分析结果
+        # 提示 LLM Kết quả phân tích
         output_parts.append("\n---")
         output_parts.append("请根据上述输出分析漏洞是否存在。")
 
@@ -316,7 +316,7 @@ class ExtractFunctionTool(AgentTool):
 
         full_path = os.path.join(self.project_root, file_path)
         if not os.path.exists(full_path):
-            return ToolResult(success=False, error=f"文件不存在: {file_path}")
+            return ToolResult(success=False, error=f"Tệp không tồn tại: {file_path}")
 
         with open(full_path, 'r', encoding='utf-8', errors='ignore') as f:
             code = f.read()
@@ -357,8 +357,8 @@ class ExtractFunctionTool(AgentTool):
         else:
             return ToolResult(
                 success=False,
-                error=result.get("error", "提取失败"),
-                data=f"无法提取函数 '{function_name}'。你可以使用 read_file 工具直接读取文件，手动定位函数代码。"
+                error=result.get("error", "Trích xuất thất bại"),
+                data=f"Không thể trích xuất hàm '{function_name}'。Bạn có thể dùng công cụ read_file để đọc tệp và xác định mã hàm thủ công."
             )
 
     def _extract_python(self, code: str, function_name: str, include_imports: bool) -> Dict:
@@ -397,7 +397,7 @@ class ExtractFunctionTool(AgentTool):
                         "line_end": node.end_lineno,
                     }
 
-        return {"success": False, "error": f"未找到函数 '{function_name}'"}
+        return {"success": False, "error": f"Không tìm thấy hàm '{function_name}'"}
 
     def _extract_php(self, code: str, function_name: str) -> Dict:
         """提取 PHP 函数"""
@@ -407,7 +407,7 @@ class ExtractFunctionTool(AgentTool):
         match = re.search(pattern, code)
 
         if not match:
-            return {"success": False, "error": f"未找到函数 '{function_name}'"}
+            return {"success": False, "error": f"Không tìm thấy hàm '{function_name}'"}
 
         start_pos = match.start()
         brace_count = 0
@@ -472,7 +472,7 @@ class ExtractFunctionTool(AgentTool):
                     "code": func_code,
                 }
 
-        return {"success": False, "error": f"未找到函数 '{function_name}'"}
+        return {"success": False, "error": f"Không tìm thấy hàm '{function_name}'"}
 
     def _extract_generic(self, code: str, function_name: str) -> Dict:
         """通用函数提取（正则）"""
@@ -510,4 +510,4 @@ class ExtractFunctionTool(AgentTool):
                     "code": func_code,
                 }
 
-        return {"success": False, "error": f"未找到函数 '{function_name}'"}
+        return {"success": False, "error": f"Không tìm thấy hàm '{function_name}'"}

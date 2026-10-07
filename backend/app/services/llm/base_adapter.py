@@ -41,7 +41,7 @@ class BaseLLMAdapter(ABC):
         """验证配置是否有效"""
         if not self.config.api_key:
             raise LLMError(
-                "API Key未配置",
+                "Chưa cấu hình API Key",
                 self.config.provider
             )
         return True
@@ -53,7 +53,7 @@ class BaseLLMAdapter(ABC):
             return await asyncio.wait_for(coro, timeout=timeout)
         except asyncio.TimeoutError:
             raise LLMError(
-                f"请求超时 ({timeout}s)",
+                f"Yêu cầu hết thời gian chờ ({timeout}s)",
                 self.config.provider
             )
     
@@ -74,28 +74,28 @@ class BaseLLMAdapter(ABC):
 
         # 针对不同错误类型提供更详细的信息
         if "超时" in message or "timeout" in message.lower():
-            message = f"请求超时 ({self.config.timeout}s)。建议：\n" \
-                     f"1. 检查网络连接是否正常\n" \
-                     f"2. 尝试增加超时时间\n" \
-                     f"3. 验证API端点是否正确"
+            message = f"Yêu cầu hết thời gian chờ ({self.config.timeout}s). Khuyến nghị:\n" \
+                     f"1. Kiểm tra kết nối mạng\n" \
+                     f"2. Thử tăng thời gian chờ\n" \
+                     f"3. Kiểm tra API endpoint"
         elif any(keyword in message for keyword in ["余额不足", "资源包", "充值", "quota", "insufficient", "balance"]):
-            message = f"账户余额不足或配额已用尽，请充值后重试"
+            message = "Tài khoản không đủ số dư hoặc đã hết quota. Vui lòng bổ sung hạn mức rồi thử lại"
             status_code = status_code or 402
         elif status_code == 401 or status_code == 403:
-            message = f"API认证失败。建议：\n" \
-                     f"1. 检查API Key是否正确配置\n" \
-                     f"2. 确认API Key是否有效且未过期\n" \
-                     f"3. 验证API Key权限是否充足"
+            message = "Xác thực API thất bại. Khuyến nghị:\n" \
+                     "1. Kiểm tra API Key đã được cấu hình đúng\n" \
+                     "2. Xác nhận API Key còn hiệu lực\n" \
+                     "3. Kiểm tra API Key có đủ quyền"
         elif status_code == 429:
-            message = f"API调用频率超限。建议：\n" \
-                     f"1. 等待一段时间后重试\n" \
-                     f"2. 降低并发数\n" \
-                     f"3. 增加请求间隔"
+            message = "API bị giới hạn tần suất. Khuyến nghị:\n" \
+                     "1. Chờ một lúc rồi thử lại\n" \
+                     "2. Giảm số lượng tác vụ đồng thời\n" \
+                     "3. Tăng khoảng thời gian giữa các yêu cầu"
         elif status_code and status_code >= 500:
-            message = f"API服务异常 ({status_code})。建议：\n" \
-                     f"1. 稍后重试\n" \
-                     f"2. 检查服务商状态页面\n" \
-                     f"3. 尝试切换其他LLM提供商"
+            message = f"Dịch vụ API gặp lỗi ({status_code}). Khuyến nghị:\n" \
+                     "1. Thử lại sau\n" \
+                     "2. Kiểm tra trang trạng thái của nhà cung cấp\n" \
+                     "3. Thử chuyển sang nhà cung cấp LLM khác"
 
         full_message = f"{context}: {message}" if context else message
 

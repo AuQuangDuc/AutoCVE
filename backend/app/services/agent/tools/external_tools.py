@@ -69,7 +69,7 @@ def _smart_resolve_target_path(
     
     # 最终检查
     if not os.path.exists(host_check_path):
-        error_msg = f"目标路径不存在: {target_path} (完整路径: {host_check_path})"
+        error_msg = f"Đường dẫn đích không tồn tại: {target_path} (完整路径: {host_check_path})"
         logger.error(f"[{tool_name}] {error_msg}")
         return safe_target_path, host_check_path, error_msg
     
@@ -99,7 +99,7 @@ class SemgrepTool(AgentTool):
     """
     Semgrep 静态分析工具
     
-    Semgrep 是一款快速、轻量级的静态分析工具，支持多种编程语言。
+    Semgrep 是一款快速、轻量级的静态分析工具，Hỗ trợ多种编程语言。
     提供丰富的安全规则库，可以检测各种安全漏洞。
     
     官方规则集:
@@ -141,7 +141,7 @@ class SemgrepTool(AgentTool):
     @property
     def description(self) -> str:
         return """使用 Semgrep 进行静态安全分析。
-Semgrep 是业界领先的静态分析工具，支持 30+ 种编程语言。
+Semgrep 是业界领先的静态分析工具，Hỗ trợ 30+ 种编程语言。
 
 ⚠️ 重要提示:
 - target_path 使用 '.' 扫描整个项目（推荐）
@@ -232,8 +232,8 @@ Semgrep 是业界领先的静态分析工具，支持 30+ 种编程语言。
                     logger.error(f"[Semgrep] stdout: {stdout_preview}")
                 return ToolResult(
                     success=False,
-                    data=f"Semgrep 执行失败 (exit_code={result['exit_code']}): {error_msg}",
-                    error=f"Semgrep 执行失败: {error_msg}",
+                    data=f"Semgrep thực thi thất bại (exit_code={result['exit_code']}): {error_msg}",
+                    error=f"Semgrep thực thi thất bại: {error_msg}",
                 )
 
             # 解析结果
@@ -248,7 +248,7 @@ Semgrep 是业界领先的静态分析工具，支持 30+ 种编程语言。
                     results = json.loads(json_str)
                     logger.info(f"[Semgrep] JSON 解析成功, results 数量: {len(results.get('results', []))}")
                 else:
-                    logger.warning(f"[Semgrep] 未找到 JSON 起始符 '{{', stdout: {stdout[:500]}")
+                    logger.warning(f"[Semgrep] Không tìm thấy ký tự bắt đầu JSON '{{', stdout: {stdout[:500]}")
                     results = {}
             except json.JSONDecodeError as e:
                 error_msg = f"无法解析 Semgrep 输出 (位置 {e.pos}): {e.msg}"
@@ -265,7 +265,7 @@ Semgrep 是业界领先的静态分析工具，支持 30+ 种编程语言。
             if not findings:
                 return ToolResult(
                     success=True,
-                    data=f"Semgrep 扫描完成，未发现安全问题 (规则集: {rules})",
+                    data=f"Semgrep quét hoàn tất, không phát hiện vấn đề bảo mật (bộ quy tắc: {rules})",
                     metadata={"findings_count": 0, "rules": rules}
                 )
             
@@ -421,7 +421,7 @@ Bandit 是 Python 专用的安全分析工具。
             if not findings:
                 return ToolResult(
                     success=True,
-                    data="Bandit 扫描完成，未发现 Python 安全问题",
+                    data="Bandit quét hoàn tất, không phát hiện vấn đề bảo mật Python",
                     metadata={"findings_count": 0}
                 )
             
@@ -489,7 +489,7 @@ class GitleaksTool(AgentTool):
     @property
     def description(self) -> str:
         return """使用 Gitleaks 检测代码中的密钥泄露。
-Gitleaks 是专业的密钥检测工具，支持 150+ 种密钥类型。
+Gitleaks 是专业的密钥检测工具，Hỗ trợ 150+ 种密钥类型。
 
 ⚠️ 重要提示: target_path 使用 '.' 扫描整个项目，不要使用项目目录名！
 
@@ -552,14 +552,14 @@ Gitleaks 是专业的密钥检测工具，支持 150+ 种密钥类型。
             if result['exit_code'] != 0:
                 # 🔥 修复：错误信息可能在 error 或 stderr 中
                 error_msg = result.get('error') or result.get('stderr', '')[:300] or '未知错误'
-                return ToolResult(success=False, data=f"Gitleaks 执行失败: {error_msg}", error=f"Gitleaks 执行失败: {error_msg}")
+                return ToolResult(success=False, data=f"Gitleaks thực thi thất bại: {error_msg}", error=f"Gitleaks thực thi thất bại: {error_msg}")
 
             stdout = result['stdout']
             
             if not stdout.strip():
                 return ToolResult(
                     success=True,
-                    data="🔐 Gitleaks 扫描完成，未发现密钥泄露",
+                    data="🔐 Gitleaks quét hoàn tất, không phát hiện rò rỉ khóa bí mật",
                     metadata={"findings_count": 0}
                 )
             
@@ -576,7 +576,7 @@ Gitleaks 是专业的密钥检测工具，支持 150+ 种密钥类型。
             if not findings:
                  return ToolResult(
                     success=True,
-                    data="🔐 Gitleaks 扫描完成，未发现密钥泄露",
+                    data="🔐 Gitleaks quét hoàn tất, không phát hiện rò rỉ khóa bí mật",
                     metadata={"findings_count": 0}
                 )
             
@@ -680,7 +680,7 @@ class NpmAuditTool(AgentTool):
         # 宿主机预检查
         package_json = os.path.join(full_path, "package.json")
         if not os.path.exists(package_json):
-            error_msg = f"未找到 package.json: {target_path}"
+            error_msg = f"Không tìm thấy package.json: {target_path}"
             return ToolResult(
                 success=False,
                 data=error_msg,
@@ -717,16 +717,16 @@ class NpmAuditTool(AgentTool):
                 if json_start >= 0:
                     results = json.loads(result['stdout'][json_start:])
                 else:
-                    return ToolResult(success=True, data=f"npm audit 输出为空或格式错误: {result['stdout'][:100]}")
+                    return ToolResult(success=True, data=f"Đầu ra npm audit trống hoặc sai định dạng: {result['stdout'][:100]}")
             except json.JSONDecodeError:
-                return ToolResult(success=True, data=f"npm audit 输出格式错误")
+                return ToolResult(success=True, data=f"Định dạng đầu ra npm audit không hợp lệ")
             
             vulnerabilities = results.get("vulnerabilities", {})
             
             if not vulnerabilities:
                 return ToolResult(
                     success=True,
-                    data="📦 npm audit 完成，未发现依赖漏洞",
+                    data="📦 npm audit hoàn tất, không phát hiện lỗ hổng dependency",
                     metadata={"findings_count": 0}
                 )
             
@@ -818,7 +818,7 @@ class SafetyTool(AgentTool):
 
         full_path = os.path.join(self.project_root, requirements_file)
         if not os.path.exists(full_path):
-            error_msg = f"未找到依赖文件: {requirements_file}"
+            error_msg = f"Không tìm thấy tệp dependency: {requirements_file}"
             return ToolResult(success=False, data=error_msg, error=error_msg)
             
         # commands
@@ -839,7 +839,7 @@ class SafetyTool(AgentTool):
             
             stdout = result['stdout']
             try:
-                # Safety 输出的 JSON 格式可能不同版本有差异
+                # Đầu ra Safety的 JSON 格式可能不同版本有差异
                 # find first { or [
                 start_idx = -1
                 for i, char in enumerate(stdout):
@@ -852,22 +852,22 @@ class SafetyTool(AgentTool):
                      if "No known security" in output_json:
                           return ToolResult(
                             success=True,
-                            data="🐍 Safety 扫描完成，未发现 Python 依赖漏洞",
+                            data="🐍 Safety quét hoàn tất, không phát hiện lỗ hổng dependency Python",
                             metadata={"findings_count": 0}
                         )
                      results = json.loads(output_json)
                 else:
-                     return ToolResult(success=True, data=f"Safety 输出:\n{stdout[:1000]}")
+                     return ToolResult(success=True, data=f"Đầu ra Safety:\n{stdout[:1000]}")
 
             except:
-                return ToolResult(success=True, data=f"Safety 输出解析失败:\n{stdout[:1000]}")
+                return ToolResult(success=True, data=f"Không thể phân tích đầu ra Safety:\n{stdout[:1000]}")
             
             vulnerabilities = results if isinstance(results, list) else results.get("vulnerabilities", [])
             
             if not vulnerabilities:
                 return ToolResult(
                     success=True,
-                    data="🐍 Safety 扫描完成，未发现 Python 依赖漏洞",
+                    data="🐍 Safety quét hoàn tất, không phát hiện lỗ hổng dependency Python",
                     metadata={"findings_count": 0}
                 )
             
@@ -928,7 +928,7 @@ class TruffleHogTool(AgentTool):
 ⚠️ 重要提示: target_path 使用 '.' 扫描整个项目，不要使用项目目录名！
 
 特点:
-- 支持 700+ 种密钥类型
+- Hỗ trợ 700+ 种密钥类型
 - 可以验证密钥是否仍然有效
 - 高精度，低误报
 
@@ -976,7 +976,7 @@ class TruffleHogTool(AgentTool):
             if not stdout.strip():
                 return ToolResult(
                     success=True,
-                    data="🔍 TruffleHog 扫描完成，未发现密钥泄露",
+                    data="🔍 TruffleHog quét hoàn tất, không phát hiện rò rỉ khóa bí mật",
                     metadata={"findings_count": 0}
                 )
             
@@ -992,7 +992,7 @@ class TruffleHogTool(AgentTool):
             if not findings:
                 return ToolResult(
                     success=True,
-                    data="🔍 TruffleHog 扫描完成，未发现密钥泄露",
+                    data="🔍 TruffleHog quét hoàn tất, không phát hiện rò rỉ khóa bí mật",
                     metadata={"findings_count": 0}
                 )
             
@@ -1030,7 +1030,7 @@ class OSVScannerTool(AgentTool):
     OSV-Scanner 开源漏洞扫描工具
     
     Google 开源的漏洞扫描工具，使用 OSV 数据库。
-    支持多种包管理器和锁文件。
+    Hỗ trợ多种包管理器和锁文件。
     """
     
     def __init__(self, project_root: str, sandbox_manager: Optional["SandboxManager"] = None):
@@ -1051,7 +1051,7 @@ Google 开源的漏洞扫描工具。
 
 ⚠️ 重要提示: target_path 使用 '.' 扫描整个项目，不要使用项目目录名！
 
-支持:
+Hỗ trợ:
 - package.json (npm)
 - requirements.txt (Python)
 - go.mod (Go)
@@ -1099,15 +1099,15 @@ Google 开源的漏洞扫描工具。
                 results = json.loads(stdout)
             except:
                 if "no package sources found" in stdout.lower():
-                    return ToolResult(success=True, data="OSV-Scanner: 未找到可扫描的包文件")
-                return ToolResult(success=True, data=f"OSV-Scanner 输出:\n{stdout[:1000]}")
+                    return ToolResult(success=True, data="OSV-Scanner: không tìm thấy tệp package có thể quét")
+                return ToolResult(success=True, data=f"Đầu ra OSV-Scanner:\n{stdout[:1000]}")
             
             vulns = results.get("results", [])
             
             if not vulns:
                 return ToolResult(
                     success=True,
-                    data="📋 OSV-Scanner 扫描完成，未发现依赖漏洞",
+                    data="📋 OSV-Scanner quét hoàn tất, không phát hiện lỗ hổng dependency",
                     metadata={"findings_count": 0}
                 )
             

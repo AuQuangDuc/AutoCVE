@@ -1,6 +1,6 @@
 """
 RAG 检索工具
-支持语义检索代码
+Hỗ trợ语义检索代码
 """
 
 from typing import Optional, List
@@ -45,7 +45,7 @@ class RAGQueryTool(AgentTool):
 输入: 
 - query: 描述你要查找的代码，例如 "处理用户登录的函数"、"SQL查询执行"、"文件上传处理"
 - top_k: 返回结果数量（默认10）
-- file_path: 可选，限定在某个文件中搜索
+- file_path: 可选，限定在某tệp中搜索
 - language: 可选，限定编程语言
 
 输出: 相关的代码片段列表，包含文件路径、行号、代码内容和相似度分数"""
@@ -74,7 +74,7 @@ class RAGQueryTool(AgentTool):
             if not results:
                 return ToolResult(
                     success=True,
-                    data="没有找到相关代码",
+                    data="Không tìm thấy mã liên quan",
                     metadata={"query": query, "results_count": 0}
                 )
             
@@ -104,7 +104,7 @@ class RAGQueryTool(AgentTool):
         except Exception as e:
             return ToolResult(
                 success=False,
-                error=f"RAG 检索失败: {str(e)}",
+                error=f"Truy vấn RAG thất bại: {str(e)}",
             )
 
 
@@ -135,7 +135,7 @@ class SecurityCodeSearchTool(AgentTool):
         return """搜索可能存在安全漏洞的代码。
 专门针对特定漏洞类型进行搜索。
 
-支持的漏洞类型:
+Hỗ trợ的漏洞类型:
 - sql_injection: SQL 注入
 - xss: 跨站脚本
 - command_injection: 命令注入
@@ -165,19 +165,19 @@ class SecurityCodeSearchTool(AgentTool):
             if not results:
                 return ToolResult(
                     success=True,
-                    data=f"没有找到与 {vulnerability_type} 相关的代码",
+                    data=f"Không tìm thấy mã liên quan đến {vulnerability_type}",
                     metadata={"vulnerability_type": vulnerability_type, "results_count": 0}
                 )
             
             # 格式化输出
-            output_parts = [f"找到 {len(results)} 个可能与 {vulnerability_type} 相关的代码:\n"]
+            output_parts = [f"Tìm thấy {len(results)} đoạn mã có thể liên quan đến {vulnerability_type}:\n"]
             
             for i, result in enumerate(results):
-                output_parts.append(f"\n--- 可疑代码 {i+1} ---")
-                output_parts.append(f"文件: {result.file_path}:{result.line_start}")
+                output_parts.append(f"\n--- Mã đáng chú ý {i+1} ---")
+                output_parts.append(f"Tệp: {result.file_path}:{result.line_start}")
                 if result.security_indicators:
-                    output_parts.append(f"⚠️ 安全指标: {', '.join(result.security_indicators)}")
-                output_parts.append(f"代码:\n```{result.language}\n{result.content}\n```")
+                    output_parts.append(f"⚠️ Chỉ báo bảo mật: {', '.join(result.security_indicators)}")
+                output_parts.append(f"Mã:\n```{result.language}\n{result.content}\n```")
             
             return ToolResult(
                 success=True,
@@ -194,21 +194,21 @@ class SecurityCodeSearchTool(AgentTool):
             if "401" in error_msg or "Unauthorized" in error_msg:
                 return ToolResult(
                     success=False,
-                    error=f"安全代码搜索失败: API 认证失败（401 Unauthorized）。\n"
-                          f"请检查系统配置中的 LLM API Key 是否正确设置。\n"
-                          f"错误详情: {error_msg[:200]}",
+                    error="Tìm kiếm mã bảo mật thất bại: xác thực API thất bại (401 Unauthorized).\n"
+                          "Hãy kiểm tra LLM API Key trong cấu hình hệ thống.\n"
+                          f"Chi tiết lỗi: {error_msg[:200]}",
                 )
             elif "403" in error_msg or "Forbidden" in error_msg:
                 return ToolResult(
                     success=False,
-                    error=f"安全代码搜索失败: API 访问被拒绝（403 Forbidden）。\n"
-                          f"请检查 API Key 是否有足够的权限。\n"
-                          f"错误详情: {error_msg[:200]}",
+                    error="Tìm kiếm mã bảo mật thất bại: API từ chối truy cập (403 Forbidden).\n"
+                          "Hãy kiểm tra quyền của API Key.\n"
+                          f"Chi tiết lỗi: {error_msg[:200]}",
                 )
             else:
                 return ToolResult(
                     success=False,
-                    error=f"安全代码搜索失败: {error_msg[:500]}",
+                    error=f"Tìm kiếm mã bảo mật thất bại: {error_msg[:500]}",
                 )
 
 
@@ -266,27 +266,27 @@ class FunctionContextTool(AgentTool):
                 include_callees=include_callees,
             )
             
-            output_parts = [f"函数 '{function_name}' 的上下文分析:\n"]
+            output_parts = [f"Phân tích ngữ cảnh của hàm '{function_name}':\n"]
             
             # 函数定义
             if context["definition"]:
-                output_parts.append("### 函数定义:")
+                output_parts.append("### Định nghĩa hàm:")
                 for result in context["definition"]:
-                    output_parts.append(f"文件: {result.file_path}:{result.line_start}")
+                    output_parts.append(f"Tệp: {result.file_path}:{result.line_start}")
                     output_parts.append(f"```{result.language}\n{result.content}\n```")
             else:
-                output_parts.append("未找到函数定义")
+                output_parts.append("Không tìm thấy định nghĩa hàm")
             
             # 调用者
             if context["callers"]:
-                output_parts.append(f"\n### 调用此函数的代码 ({len(context['callers'])} 处):")
+                output_parts.append(f"\n### Mã gọi hàm này ({len(context['callers'])} vị trí):")
                 for result in context["callers"][:5]:
                     output_parts.append(f"- {result.file_path}:{result.line_start}")
                     output_parts.append(f"```{result.language}\n{result.content[:500]}\n```")
             
             # 被调用者
             if context["callees"]:
-                output_parts.append(f"\n### 此函数调用的其他函数:")
+                output_parts.append("\n### Các hàm khác được hàm này gọi:")
                 for result in context["callees"][:5]:
                     if result.name:
                         output_parts.append(f"- {result.name} ({result.file_path})")
@@ -305,6 +305,6 @@ class FunctionContextTool(AgentTool):
         except Exception as e:
             return ToolResult(
                 success=False,
-                error=f"函数上下文搜索失败: {str(e)}",
+                error=f"Tìm kiếm ngữ cảnh hàm thất bại: {str(e)}",
             )
 

@@ -88,7 +88,7 @@ class CodeAnalysisTool(AgentTool):
             # 限制代码长度，避免超时
             max_code_length = 50000  # 约 50KB
             if len(code) > max_code_length:
-                code = code[:max_code_length] + "\n\n... (代码已截断，仅分析前 50000 字符)"
+                code = code[:max_code_length] + "\n\n... (mã đã được cắt bớt, chỉ phân tích 50.000 ký tự đầu)"
             
             # 添加超时保护（5分钟）
             try:
@@ -99,7 +99,7 @@ class CodeAnalysisTool(AgentTool):
             except asyncio.TimeoutError:
                 return ToolResult(
                     success=False,
-                    error="代码分析超时（超过5分钟）。代码可能过长或过于复杂，请尝试分析较小的代码片段。",
+                    error="Phân tích mã nguồn đã hết thời gian (quá 5 phút). Mã có thể quá dài hoặc phức tạp; hãy thử với đoạn mã nhỏ hơn.",
                 )
             
             issues = analysis.get("issues", [])
@@ -107,9 +107,9 @@ class CodeAnalysisTool(AgentTool):
             if not issues:
                 return ToolResult(
                     success=True,
-                    data="代码分析完成，未发现明显的安全问题。\n\n"
-                         f"质量评分: {analysis.get('quality_score', 'N/A')}\n"
-                         f"文件: {file_path}",
+                    data="Phân tích mã nguồn hoàn tất, không phát hiện vấn đề bảo mật rõ ràng.\n\n"
+                         f"Điểm chất lượng: {analysis.get('quality_score', 'N/A')}\n"
+                         f"Tệp: {file_path}",
                     metadata={
                         "file_path": file_path,
                         "issues_count": 0,
@@ -118,8 +118,8 @@ class CodeAnalysisTool(AgentTool):
                 )
             
             # 格式化输出
-            output_parts = [f"🔍 代码分析结果 - {file_path}\n"]
-            output_parts.append(f"发现 {len(issues)} 个问题:\n")
+            output_parts = [f"🔍 Kết quả phân tích mã nguồn - {file_path}\n"]
+            output_parts.append(f"Phát hiện {len(issues)} vấn đề:\n")
             
             for i, issue in enumerate(issues):
                 severity_icon = {
@@ -129,22 +129,22 @@ class CodeAnalysisTool(AgentTool):
                     "low": "🟢"
                 }.get(issue.get("severity", ""), "⚪")
                 
-                output_parts.append(f"\n{severity_icon} 问题 {i+1}: {issue.get('title', 'Unknown')}")
-                output_parts.append(f"   类型: {issue.get('type', 'unknown')}")
-                output_parts.append(f"   严重程度: {issue.get('severity', 'unknown')}")
-                output_parts.append(f"   行号: {issue.get('line', 'N/A')}")
-                output_parts.append(f"   描述: {issue.get('description', '')}")
+                output_parts.append(f"\n{severity_icon} Vấn đề {i+1}: {issue.get('title', 'Unknown')}")
+                output_parts.append(f"   Loại: {issue.get('type', 'unknown')}")
+                output_parts.append(f"   Mức độ: {issue.get('severity', 'unknown')}")
+                output_parts.append(f"   Dòng: {issue.get('line', 'N/A')}")
+                output_parts.append(f"   Mô tả: {issue.get('description', '')}")
                 
                 if issue.get("code_snippet"):
-                    output_parts.append(f"   代码片段:\n   ```\n   {issue.get('code_snippet')}\n   ```")
+                    output_parts.append(f"   Đoạn mã:\n   ```\n   {issue.get('code_snippet')}\n   ```")
                 
                 if issue.get("suggestion"):
-                    output_parts.append(f"   修复建议: {issue.get('suggestion')}")
+                    output_parts.append(f"   Khuyến nghị khắc phục: {issue.get('suggestion')}")
                 
                 if issue.get("ai_explanation"):
-                    output_parts.append(f"   AI解释: {issue.get('ai_explanation')}")
+                    output_parts.append(f"   Giải thích của AI: {issue.get('ai_explanation')}")
             
-            output_parts.append(f"\n质量评分: {analysis.get('quality_score', 'N/A')}/100")
+            output_parts.append(f"\nĐiểm chất lượng: {analysis.get('quality_score', 'N/A')}/100")
             
             return ToolResult(
                 success=True,
@@ -166,7 +166,7 @@ class CodeAnalysisTool(AgentTool):
             logger.error(traceback.format_exc())
             return ToolResult(
                 success=False,
-                error=f"代码分析失败: {str(e)}",
+                error=f"Phân tích mã nguồn thất bại: {str(e)}",
             )
 
 
@@ -244,20 +244,20 @@ class DataFlowAnalysisTool(AgentTool):
 """
 
             analysis_prompt += f"""
-请分析:
-1. 变量 '{variable_name}' 的来源是什么？（用户输入、配置、数据库等）
-2. 变量在传递过程中是否经过了净化/验证？
-3. 变量最终流向了哪些危险函数？
-4. 是否存在安全风险？
+Hãy phân tích:
+1. Biến '{variable_name}' đến từ đâu? (dữ liệu người dùng, cấu hình, cơ sở dữ liệu...)
+2. Biến có được làm sạch/xác minh trong quá trình truyền hay không?
+3. Biến cuối cùng chảy tới những hàm nguy hiểm nào?
+4. Có rủi ro bảo mật hay không?
 
-请返回 JSON 格式的分析结果，包含:
-- source_type: 数据源类型
-- sanitized: 是否经过净化
-- sanitization_methods: 使用的净化方法
-- dangerous_sinks: 流向的危险函数列表
-- risk_level: 风险等级 (high/medium/low/none)
-- explanation: 详细解释
-- recommendation: 建议
+Hãy trả về kết quả JSON gồm:
+- source_type: loại nguồn dữ liệu
+- sanitized: đã được làm sạch hay chưa
+- sanitization_methods: các phương thức làm sạch
+- dangerous_sinks: danh sách sink nguy hiểm
+- risk_level: mức rủi ro (high/medium/low/none)
+- explanation: giải thích chi tiết
+- recommendation: khuyến nghị
 """
             
             # 🔥 添加超时保护（2分钟）
@@ -271,43 +271,43 @@ class DataFlowAnalysisTool(AgentTool):
                     timeout=120.0  # 2分钟超时
                 )
             except asyncio.TimeoutError:
-                logger.warning(f"数据流分析 LLM 调用超时，使用快速分析结果")
-                return self._format_quick_analysis_result(quick_analysis, variable_name, file_path, "LLM调用超时，使用规则分析")
+                logger.warning("Phân tích data flow bằng LLM hết thời gian, sử dụng phân tích nhanh")
+                return self._format_quick_analysis_result(quick_analysis, variable_name, file_path, "LLM hết thời gian, sử dụng phân tích theo quy tắc")
             
             # 🔥 检查结果是否有效
             if not result or (isinstance(result, dict) and not result.get("source_type") and not result.get("risk_level")):
-                logger.warning(f"数据流分析 LLM 返回无效结果，使用快速分析结果")
-                return self._format_quick_analysis_result(quick_analysis, variable_name, file_path, "LLM返回无效，使用规则分析")
+                logger.warning("LLM trả kết quả data flow không hợp lệ, sử dụng phân tích nhanh")
+                return self._format_quick_analysis_result(quick_analysis, variable_name, file_path, "LLM trả kết quả không hợp lệ, sử dụng phân tích theo quy tắc")
             
             # 格式化输出
-            output_parts = [f"📊 数据流分析结果 - 变量: {variable_name}\n"]
+            output_parts = [f"📊 Kết quả phân tích data flow - Biến: {variable_name}\n"]
             
             if isinstance(result, dict):
                 if result.get("source_type"):
-                    output_parts.append(f"数据源: {result.get('source_type')}")
+                    output_parts.append(f"Nguồn dữ liệu: {result.get('source_type')}")
                 if result.get("sanitized") is not None:
-                    sanitized = "✅ 是" if result.get("sanitized") else "❌ 否"
-                    output_parts.append(f"是否净化: {sanitized}")
+                    sanitized = "✅ Có" if result.get("sanitized") else "❌ Không"
+                    output_parts.append(f"Đã làm sạch: {sanitized}")
                 if result.get("sanitization_methods"):
                     methods = result.get('sanitization_methods', [])
                     if isinstance(methods, list):
-                        output_parts.append(f"净化方法: {', '.join(methods)}")
+                        output_parts.append(f"Phương thức làm sạch: {', '.join(methods)}")
                     else:
-                        output_parts.append(f"净化方法: {methods}")
+                        output_parts.append(f"Phương thức làm sạch: {methods}")
                 if result.get("dangerous_sinks"):
                     sinks = result.get('dangerous_sinks', [])
                     if isinstance(sinks, list):
-                        output_parts.append(f"危险函数: {', '.join(sinks)}")
+                        output_parts.append(f"Sink nguy hiểm: {', '.join(sinks)}")
                     else:
-                        output_parts.append(f"危险函数: {sinks}")
+                        output_parts.append(f"Sink nguy hiểm: {sinks}")
                 if result.get("risk_level"):
                     risk_icons = {"high": "🔴", "medium": "🟠", "low": "🟡", "none": "🟢"}
                     icon = risk_icons.get(result.get("risk_level", ""), "⚪")
-                    output_parts.append(f"风险等级: {icon} {result.get('risk_level', '').upper()}")
+                    output_parts.append(f"Mức rủi ro: {icon} {result.get('risk_level', '').upper()}")
                 if result.get("explanation"):
-                    output_parts.append(f"\n分析: {result.get('explanation')}")
+                    output_parts.append(f"\nPhân tích: {result.get('explanation')}")
                 if result.get("recommendation"):
-                    output_parts.append(f"\n建议: {result.get('recommendation')}")
+                    output_parts.append(f"\nKhuyến nghị: {result.get('recommendation')}")
             else:
                 output_parts.append(str(result))
             
@@ -322,13 +322,13 @@ class DataFlowAnalysisTool(AgentTool):
             )
             
         except Exception as e:
-            logger.error(f"数据流分析失败: {e}")
+            logger.error(f"Phân tích data flow thất bại: {e}")
             # 🔥 回退到快速分析
             return self._format_quick_analysis_result(
                 quick_analysis, 
                 variable_name, 
                 file_path, 
-                f"LLM调用失败({str(e)[:50]}...)，使用规则分析"
+                f"Gọi LLM thất bại ({str(e)[:50]}...), sử dụng phân tích theo quy tắc"
             )
     
     def _quick_pattern_analysis(
@@ -420,18 +420,18 @@ class DataFlowAnalysisTool(AgentTool):
         file_path: str,
         note: str
     ) -> ToolResult:
-        """格式化快速分析结果"""
-        output_parts = [f"📊 数据流分析结果 - 变量: {variable_name}"]
-        output_parts.append(f"⚠️ 注意: {note}\n")
+        """Định dạng kết quả phân tích nhanh."""
+        output_parts = [f"📊 Kết quả phân tích data flow - Biến: {variable_name}"]
+        output_parts.append(f"⚠️ Lưu ý: {note}\n")
         
-        output_parts.append(f"数据源: {analysis.get('source_type', 'unknown')}")
-        output_parts.append(f"是否净化: {'✅ 是' if analysis.get('sanitized') else '❌ 否'}")
+        output_parts.append(f"Nguồn dữ liệu: {analysis.get('source_type', 'unknown')}")
+        output_parts.append(f"Đã làm sạch: {'✅ Có' if analysis.get('sanitized') else '❌ Không'}")
         
         if analysis.get("sanitization_methods"):
-            output_parts.append(f"净化方法: {', '.join(analysis['sanitization_methods'])}")
+            output_parts.append(f"Phương thức làm sạch: {', '.join(analysis['sanitization_methods'])}")
         
         if analysis.get("dangerous_sinks"):
-            output_parts.append(f"危险函数: {', '.join(analysis['dangerous_sinks'])}")
+            output_parts.append(f"Sink nguy hiểm: {', '.join(analysis['dangerous_sinks'])}")
         
         risk_icons = {"high": "🔴", "medium": "🟠", "low": "🟡", "none": "🟢"}
         risk = analysis.get("risk_level", "low")
@@ -593,6 +593,6 @@ class VulnerabilityValidationTool(AgentTool):
         except Exception as e:
             return ToolResult(
                 success=False,
-                error=f"漏洞验证失败: {str(e)}",
+                error=f"Xác minh lỗ hổng thất bại: {str(e)}",
             )
 

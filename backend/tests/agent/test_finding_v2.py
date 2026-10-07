@@ -134,10 +134,10 @@ def test_finding_runtime_incomplete_error_distinguishes_timeout_from_finalize_fa
 @pytest.mark.parametrize(
     ("stop_reason", "raw_message", "expected"),
     [
-        (RuntimeStopReason.MODEL_STREAM_TIMEOUT.value, "TimeoutException", "模型流超时"),
-        (RuntimeStopReason.TOOL_TIMEOUT.value, "工具执行超时", "工具超时"),
-        (RuntimeStopReason.AGENT_TIMEOUT.value, "50 minutes", "Agent 总时间超时"),
-        (RuntimeStopReason.QUOTA_EXHAUSTED.value, "余额不足或无可用资源包", "余额/配额不足"),
+        (RuntimeStopReason.MODEL_STREAM_TIMEOUT.value, "TimeoutException", "luồng mô hình hết thời gian"),
+        (RuntimeStopReason.TOOL_TIMEOUT.value, "工具执行超时", "công cụ hết thời gian"),
+        (RuntimeStopReason.AGENT_TIMEOUT.value, "50 minutes", "Agent đã hết tổng thời gian"),
+        (RuntimeStopReason.QUOTA_EXHAUSTED.value, "余额不足或无可用资源包", "không đủ số dư/quota"),
     ],
 )
 def test_finding_runtime_incomplete_error_uses_specific_failure_category(stop_reason, raw_message, expected):
@@ -1180,7 +1180,7 @@ async def test_finding_agent_initial_message_reports_queue_suppression_summary(m
 
     assert '"max_active_candidates": 2' in message
     assert '"initial_queue_suppressed":' in message
-    assert '"初始队列生成规则"' in message
+    assert '"quy_tac_tao_hang_doi_ban_dau"' in message
 
 
 @pytest.mark.asyncio
@@ -2292,7 +2292,7 @@ async def test_finding_runtime_stack_skips_handoff_for_fallback_recovered_result
     assert len(result.data["recovered_candidates"]) == 1
     assert result.data["recovered_candidates"][0]["title"] == "Recovered SSRF candidate"
     assert result.data["runtime_completion_mode"] == RuntimeCompletionMode.FALLBACK_RECOVERED.value
-    assert "Finding 未完成" in result.error
+    assert "Finding chưa hoàn tất" in result.error
 
 
 @pytest.mark.asyncio
@@ -2344,7 +2344,7 @@ async def test_runtime_stack_model_error_reports_llm_failure_reason(monkeypatch)
     )
 
     assert result.success is False
-    assert "模型流式请求失败" in result.error
+    assert "yêu cầu streaming tới mô hình thất bại" in result.error
     assert "LLM streaming request failed" in result.error
 
 
@@ -2358,7 +2358,7 @@ def test_runtime_stack_persistence_error_reports_storage_failure_reason():
         }
     )
 
-    assert "审计会话消息持久化失败" in message
-    assert "模型流式请求失败" not in message
+    assert "không thể lưu bền vững message của phiên kiểm tra" in message
+    assert "yêu cầu streaming tới mô hình thất bại" not in message
     assert "Audit session message persistence failed" in message
 

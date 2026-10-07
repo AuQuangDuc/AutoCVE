@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 # 默认演示账户配置
 DEFAULT_DEMO_EMAIL = "demo@example.com"
 DEFAULT_DEMO_PASSWORD = "demo123"
-DEFAULT_DEMO_NAME = "演示用户"
+DEFAULT_DEMO_NAME = "Người dùng demo"
 
 
 async def create_demo_user(db: AsyncSession) -> User | None:
@@ -65,8 +65,8 @@ async def create_demo_data(db: AsyncSession, user: User) -> None:
     # ==================== 创建演示项目 ====================
     projects_data = [
         {
-            "name": "电商平台后端",
-            "description": "基于 Spring Boot 的电商平台后端服务，包含用户管理、商品管理、订单处理等模块",
+            "name": "Backend nền tảng thương mại điện tử",
+            "description": "Dịch vụ backend thương mại điện tử dựa trên Spring Boot, gồm quản lý người dùng, sản phẩm và xử lý đơn hàng",
             "source_type": "repository",
             "repository_url": "https://github.com/example/ecommerce-backend",
             "repository_type": "github",
@@ -74,8 +74,8 @@ async def create_demo_data(db: AsyncSession, user: User) -> None:
             "programming_languages": json.dumps(["Java", "SQL"]),
         },
         {
-            "name": "移动端 App",
-            "description": "React Native 跨平台移动应用，支持 iOS 和 Android",
+            "name": "Ứng dụng di động",
+            "description": "Ứng dụng di động đa nền tảng React Native, hỗ trợ iOS và Android",
             "source_type": "repository",
             "repository_url": "https://github.com/example/mobile-app",
             "repository_type": "github",
@@ -83,8 +83,8 @@ async def create_demo_data(db: AsyncSession, user: User) -> None:
             "programming_languages": json.dumps(["TypeScript", "JavaScript"]),
         },
         {
-            "name": "数据分析平台",
-            "description": "Python 数据分析和可视化平台，集成机器学习模型",
+            "name": "Nền tảng phân tích dữ liệu",
+            "description": "Nền tảng phân tích và trực quan hóa dữ liệu Python, tích hợp mô hình machine learning",
             "source_type": "zip",
             "repository_url": None,
             "repository_type": "other",
@@ -92,8 +92,8 @@ async def create_demo_data(db: AsyncSession, user: User) -> None:
             "programming_languages": json.dumps(["Python"]),
         },
         {
-            "name": "微服务网关",
-            "description": "基于 Go 的高性能 API 网关，支持限流、熔断、负载均衡",
+            "name": "API Gateway microservice",
+            "description": "API Gateway hiệu năng cao viết bằng Go, hỗ trợ rate limiting, circuit breaker và cân bằng tải",
             "source_type": "repository",
             "repository_url": "https://gitlab.com/example/api-gateway",
             "repository_type": "gitlab",
@@ -101,8 +101,8 @@ async def create_demo_data(db: AsyncSession, user: User) -> None:
             "programming_languages": json.dumps(["Go"]),
         },
         {
-            "name": "智能客服系统",
-            "description": "基于 NLP 的智能客服系统，支持多轮对话、意图识别和知识库问答",
+            "name": "Hệ thống chăm sóc khách hàng thông minh",
+            "description": "Hệ thống chăm sóc khách hàng dựa trên NLP, hỗ trợ hội thoại nhiều lượt, nhận diện ý định và hỏi đáp kho tri thức",
             "source_type": "repository",
             "repository_url": "https://github.com/example/smart-customer-service",
             "repository_type": "github",
@@ -110,8 +110,8 @@ async def create_demo_data(db: AsyncSession, user: User) -> None:
             "programming_languages": json.dumps(["Python", "JavaScript"]),
         },
         {
-            "name": "区块链钱包",
-            "description": "多链加密货币钱包，支持 ETH、BTC 等主流币种的存储和转账",
+            "name": "Ví blockchain",
+            "description": "Ví tiền mã hóa đa chuỗi, hỗ trợ lưu trữ và chuyển ETH, BTC cùng các tài sản phổ biến khác",
             "source_type": "zip",
             "repository_url": None,
             "repository_type": "other",
@@ -185,18 +185,18 @@ async def create_demo_data(db: AsyncSession, user: User) -> None:
     
     # ==================== 创建审计问题 ====================
     issue_templates = [
-        {"type": "security", "severity": "critical", "title": "SQL 注入漏洞", "file": "UserService.java", "line": 45},
-        {"type": "security", "severity": "high", "title": "硬编码密钥", "file": "config/secrets.py", "line": 12},
-        {"type": "security", "severity": "high", "title": "XSS 跨站脚本攻击风险", "file": "components/Comment.tsx", "line": 78},
-        {"type": "security", "severity": "medium", "title": "不安全的随机数生成", "file": "utils/token.go", "line": 23},
-        {"type": "bug", "severity": "high", "title": "空指针异常风险", "file": "OrderController.java", "line": 156},
-        {"type": "bug", "severity": "medium", "title": "数组越界访问", "file": "DataProcessor.py", "line": 89},
-        {"type": "bug", "severity": "low", "title": "未处理的 Promise 拒绝", "file": "api/client.ts", "line": 34},
-        {"type": "performance", "severity": "medium", "title": "N+1 查询问题", "file": "ProductRepository.java", "line": 67},
-        {"type": "performance", "severity": "low", "title": "不必要的重复渲染", "file": "pages/Dashboard.tsx", "line": 112},
-        {"type": "style", "severity": "low", "title": "函数过长，建议拆分", "file": "services/payment.go", "line": 45},
-        {"type": "maintainability", "severity": "medium", "title": "重复代码块", "file": "handlers/auth.go", "line": 78},
-        {"type": "maintainability", "severity": "low", "title": "缺少错误处理", "file": "utils/http.py", "line": 56},
+        {"type": "security", "severity": "critical", "title": "Lỗ hổng SQL Injection", "file": "UserService.java", "line": 45},
+        {"type": "security", "severity": "high", "title": "Khóa bí mật hard-code", "file": "config/secrets.py", "line": 12},
+        {"type": "security", "severity": "high", "title": "Rủi ro Cross-Site Scripting (XSS)", "file": "components/Comment.tsx", "line": 78},
+        {"type": "security", "severity": "medium", "title": "Sinh số ngẫu nhiên không an toàn", "file": "utils/token.go", "line": 23},
+        {"type": "bug", "severity": "high", "title": "Rủi ro null pointer", "file": "OrderController.java", "line": 156},
+        {"type": "bug", "severity": "medium", "title": "Truy cập vượt giới hạn mảng", "file": "DataProcessor.py", "line": 89},
+        {"type": "bug", "severity": "low", "title": "Promise rejection chưa được xử lý", "file": "api/client.ts", "line": 34},
+        {"type": "performance", "severity": "medium", "title": "Vấn đề truy vấn N+1", "file": "ProductRepository.java", "line": 67},
+        {"type": "performance", "severity": "low", "title": "Render lặp không cần thiết", "file": "pages/Dashboard.tsx", "line": 112},
+        {"type": "style", "severity": "low", "title": "Hàm quá dài, nên tách nhỏ", "file": "services/payment.go", "line": 45},
+        {"type": "maintainability", "severity": "medium", "title": "Khối mã bị lặp", "file": "handlers/auth.go", "line": 78},
+        {"type": "maintainability", "severity": "low", "title": "Thiếu xử lý lỗi", "file": "utils/http.py", "line": 56},
     ]
     
     issue_count = 0
@@ -216,8 +216,8 @@ async def create_demo_data(db: AsyncSession, user: User) -> None:
                 severity=template["severity"],
                 title=template["title"],
                 message=template["title"],
-                description=f"在文件 {template['file']} 第 {template['line'] + i * 10} 行发现 {template['title']}，这可能导致安全风险或程序异常。",
-                suggestion="建议进行代码审查并修复此问题。详细修复方案请参考相关安全规范。",
+                description=f"Phát hiện {template['title']} tại tệp {template['file']}, dòng {template['line'] + i * 10}; vấn đề này có thể gây rủi ro bảo mật hoặc lỗi chương trình.",
+                suggestion="Khuyến nghị rà soát mã nguồn và khắc phục vấn đề này. Tham khảo tiêu chuẩn bảo mật liên quan để có phương án chi tiết.",
                 status="open" if i % 3 != 0 else "resolved",
                 resolved_by=user.id if i % 3 == 0 else None,
                 resolved_at=now - timedelta(days=i) if i % 3 == 0 else None,
@@ -243,8 +243,8 @@ async def create_demo_data(db: AsyncSession, user: User) -> None:
         analysis = InstantAnalysis(
             user_id=user.id,
             language=adata["lang"],
-            code_content="# 演示代码\nprint('Hello, World!')",
-            analysis_result=json.dumps({"issues": [], "summary": "演示分析结果"}),
+            code_content="# Mã demo\nprint('Hello, World!')",
+            analysis_result=json.dumps({"issues": [], "summary": "Kết quả phân tích demo"}),
             issues_count=adata["issues"],
             quality_score=adata["score"],
             analysis_time=2.5,

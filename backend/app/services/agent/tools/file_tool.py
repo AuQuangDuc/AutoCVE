@@ -169,7 +169,7 @@ class FileReadTool(AgentTool):
     def description(self) -> str:
         return (
             "读取审计项目中的文件。"
-            "也支持本地技能库等已批准的共享根目录。"
+            "也Hỗ trợ本地技能库等已批准的共享根目录。"
         )
 
     @property
@@ -229,16 +229,16 @@ class FileReadTool(AgentTool):
         max_lines: int,
     ) -> ToolResult:
         if not os.path.exists(full_path):
-            return ToolResult(success=False, error=f"文件不存在: {requested_path}")
+            return ToolResult(success=False, error=f"Tệp không tồn tại: {requested_path}")
         if not os.path.isfile(full_path):
-            return ToolResult(success=False, error=f"不是文件: {requested_path}")
+            return ToolResult(success=False, error=f"Đường dẫn không phải là tệp: {requested_path}")
 
         file_size = os.path.getsize(full_path)
         is_large_file = file_size > 1024 * 1024
         if is_large_file and start_line is None and end_line is None:
             return ToolResult(
                 success=False,
-                error=f"文件过大 ({file_size / 1024:.1f}KB)，请指定 start_line 和 end_line 读取部分内容",
+                error=f"Tệp quá lớn ({file_size / 1024:.1f}KB), hãy chỉ định start_line và end_line để đọc một phần nội dung",
             )
 
         if is_large_file and (start_line is not None or end_line is not None):
@@ -263,11 +263,11 @@ class FileReadTool(AgentTool):
         ]
         display_path = _best_display_path(full_path, self.project_root, self.allowed_roots, requested_path)
         language = _detect_language(full_path)
-        output = f"文件: {display_path}\n"
-        output += f"行数: {start_idx + 1}-{end_idx} / {total_lines}\n\n"
+        output = f"Tệp: {display_path}\n"
+        output += f"Dòng: {start_idx + 1}-{end_idx} / {total_lines}\n\n"
         output += f"```{language}\n" + "\n".join(numbered_lines) + "\n```"
         if end_idx < total_lines:
-            output += f"\n\n... 还有 {total_lines - end_idx} 行未显示"
+            output += f"\n\n... còn {total_lines - end_idx} dòng chưa hiển thị"
 
         return ToolResult(
             success=True,
@@ -294,13 +294,13 @@ class FileReadTool(AgentTool):
         del kwargs
         full_path = _resolve_allowed_path(file_path, self.allowed_roots)
         if not full_path:
-            return ToolResult(success=False, error="安全错误：不允许访问项目目录外的文件")
+            return ToolResult(success=False, error="Lỗi bảo mật: không được phép truy cập tệp bên ngoài thư mục dự án")
         if not self._is_target_allowed(file_path, full_path):
-            return ToolResult(success=False, error=f"文件被排除或不在目标文件列表中: {file_path}")
+            return ToolResult(success=False, error=f"Tệp đã bị loại trừ hoặc không nằm trong danh sách tệp mục tiêu: {file_path}")
 
         display_path = _best_display_path(full_path, self.project_root, self.allowed_roots, file_path)
         if self._should_exclude(display_path):
-            return ToolResult(success=False, error=f"文件被排除或不在目标文件列表中: {display_path}")
+            return ToolResult(success=False, error=f"Tệp đã bị loại trừ hoặc không nằm trong danh sách tệp mục tiêu: {display_path}")
 
         try:
             return await self._read_resolved_file(
@@ -311,7 +311,7 @@ class FileReadTool(AgentTool):
                 max_lines=max_lines,
             )
         except Exception as exc:  # noqa: BLE001
-            return ToolResult(success=False, error=f"读取文件失败: {str(exc)}")
+            return ToolResult(success=False, error=f"Không thể đọc tệp: {str(exc)}")
 
 
 class ReadManyFilesTool(FileReadTool):
@@ -572,7 +572,7 @@ class FileSearchTool(AgentTool):
         if not results:
             return ToolResult(
                 success=True,
-                data=f"未找到 '{normalized_keyword}' 的匹配结果。\n已搜索 {files_searched} 个文件。",
+                data=f"Không tìm thấy kết quả khớp với '{normalized_keyword}'.\nĐã tìm kiếm {files_searched} tệp.",
                 metadata={
                     "files_searched": files_searched,
                     "matches": 0,
@@ -584,7 +584,7 @@ class FileSearchTool(AgentTool):
 
         output_parts = [
             f"'{normalized_keyword}' 的搜索结果\n",
-            f"在 {files_searched} 个文件中找到 {len(results)} 处匹配。\n",
+            f"在 {files_searched} tệp中找到 {len(results)} 处匹配。\n",
         ]
         for result in results:
             output_parts.append(f"\nFile {result['file']}:{result['line']}")
@@ -692,11 +692,11 @@ class ListFilesTool(AgentTool):
 
         target_dir = _resolve_allowed_path(directory, self.allowed_roots)
         if not target_dir:
-            return ToolResult(success=False, error="安全错误：不允许访问项目目录外的目录")
+            return ToolResult(success=False, error="Lỗi bảo mật: không được phép truy cập thư mục bên ngoài dự án")
         if not os.path.exists(target_dir):
-            return ToolResult(success=False, error=f"目录不存在: {directory}")
+            return ToolResult(success=False, error=f"Thư mục không tồn tại: {directory}")
         if not os.path.isdir(target_dir):
-            return ToolResult(success=False, error=f"不是目录: {directory}")
+            return ToolResult(success=False, error=f"Đường dẫn không phải là thư mục: {directory}")
 
         rg = shutil.which("rg")
         if not rg:
@@ -771,10 +771,10 @@ class ListFilesTool(AgentTool):
             for item in sorted(self.target_files)[:20]:
                 output_parts.append(f"  {item}")
             if len(self.target_files) > 20:
-                output_parts.append(f"  ... 还有 {len(self.target_files) - 20} 个文件")
+                output_parts.append(f"  ... 还有 {len(self.target_files) - 20} tệp")
 
         if len(files) >= max_files:
-            output_parts.append(f"\n... 结果已截断（最大 {max_files} 个文件）")
+            output_parts.append(f"\n... 结果已截断（最大 {max_files} tệp）")
 
         return ToolResult(
             success=True,

@@ -1,14 +1,23 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
-import { autoAttributeTranslations, autoTemplateTranslations, autoTextTranslations } from "./resources";
+import {
+  autoAttributeTranslations,
+  autoAttributeTranslationsVi,
+  autoTemplateTranslations,
+  autoTemplateTranslationsVi,
+  autoTextTranslations,
+  autoTextTranslationsVi,
+  autoTextTranslationsViExtra,
+  autoTextTranslationsViExtra2,
+  autoTextTranslationsViExtra3,
+} from "./resources";
+import { generatedVietnameseTemplates, generatedVietnameseText } from "./generatedVi";
 
 const SKIP_SELECTOR = [
   "script",
   "style",
   "textarea",
-  "select",
-  "option",
   "pre",
   "code",
   "[contenteditable='true']",
@@ -25,6 +34,29 @@ const originalAttributesByElement = new WeakMap<Element, Partial<Record<Translat
 
 function isEnglishLanguage(language: string) {
   return language.toLowerCase().startsWith("en");
+}
+
+function isVietnameseLanguage(language: string) {
+  return language.toLowerCase().startsWith("vi");
+}
+
+function translateText(text: string, language: string) {
+  if (isVietnameseLanguage(language)) {
+    return (
+      autoTextTranslationsViExtra[text]
+      ?? autoTextTranslationsViExtra2[text]
+      ?? autoTextTranslationsViExtra3[text]
+      ?? autoTextTranslationsVi[text]
+      ?? translateTemplateText(text, autoTemplateTranslationsVi)
+      ?? generatedVietnameseText[text]
+      ?? translateTemplateText(text, generatedVietnameseTemplates)
+      ?? autoTextTranslations[text]
+    );
+  }
+  if (isEnglishLanguage(language)) {
+    return autoTextTranslations[text] ?? translateTemplateText(text, autoTemplateTranslations);
+  }
+  return undefined;
 }
 
 function shouldSkipNode(node: Node) {
@@ -70,20 +102,22 @@ function syncTextNode(node: Text, language: string) {
   }
 
   const trimmed = originalText.trim();
-  const translated = autoTextTranslations[trimmed] ?? translateTemplateText(trimmed);
-  if (!translated) return;
+  const translated = translateText(trimmed, language);
 
   const leading = originalText.match(/^\s*/)?.[0] ?? "";
   const trailing = originalText.match(/\s*$/)?.[0] ?? "";
-  const nextText = isEnglishLanguage(language) ? `${leading}${translated}${trailing}` : originalText;
+  const nextText = translated ? `${leading}${translated}${trailing}` : originalText;
 
   if (node.nodeValue !== nextText) {
     node.nodeValue = nextText;
   }
 }
 
-function translateTemplateText(text: string) {
-  for (const template of autoTemplateTranslations) {
+function translateTemplateText(
+  text: string,
+  templates: Array<{ pattern: RegExp; translate: (...matches: string[]) => string }>,
+) {
+  for (const template of templates) {
     const match = text.match(template.pattern);
     if (match) {
       return template.translate(...match);
@@ -105,10 +139,18 @@ function syncElementAttributes(element: Element, language: string) {
     originals[attribute] = originalValue;
     originalAttributesByElement.set(element, originals);
 
-    const translated = autoAttributeTranslations[originalValue];
-    if (!translated) continue;
-
-    const nextValue = isEnglishLanguage(language) ? translated : originalValue;
+    const translated = isVietnameseLanguage(language)
+      ? autoAttributeTranslationsVi[originalValue]
+        ?? autoTextTranslationsViExtra[originalValue]
+        ?? autoTextTranslationsViExtra2[originalValue]
+        ?? autoTextTranslationsViExtra3[originalValue]
+        ?? autoTextTranslationsVi[originalValue]
+        ?? generatedVietnameseText[originalValue]
+        ?? autoAttributeTranslations[originalValue]
+      : isEnglishLanguage(language)
+        ? autoAttributeTranslations[originalValue]
+        : undefined;
+    const nextValue = translated ?? originalValue;
     if (currentValue !== nextValue) {
       element.setAttribute(attribute, nextValue);
     }

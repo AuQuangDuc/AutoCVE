@@ -518,12 +518,12 @@ class LLMService:
     @staticmethod
     def _describe_stream_error(error: Exception) -> tuple[str, str]:
         if isinstance(error, LLMRateLimitError):
-            return "rate_limit", "模型服务当前请求过多，"
+            return "rate_limit", "Dịch vụ mô hình đang nhận quá nhiều yêu cầu, "
         if isinstance(error, LLMTimeoutError):
-            return "timeout", "模型响应超时，"
+            return "timeout", "Phản hồi của mô hình đã hết thời gian chờ, "
         if isinstance(error, LLMConnectionError):
-            return "connection", "上游模型账号或连接暂时不可用，"
-        return "unknown", "模型服务暂时不可用，"
+            return "connection", "Tài khoản hoặc kết nối tới mô hình upstream tạm thời không khả dụng, "
+        return "unknown", "Dịch vụ mô hình tạm thời không khả dụng, "
 
     @classmethod
     def _build_llm_retry_event(cls, *, error: Exception, attempt: int, max_attempts: int) -> Dict[str, Any]:
@@ -533,7 +533,7 @@ class LLMService:
             "attempt": attempt,
             "max_attempts": max_attempts,
             "error_type": error_type,
-            "message_text": f"{prefix}正在进行第 {attempt}/{max_attempts} 次自动重试……",
+            "message_text": f"{prefix}đang tự động thử lại lần {attempt}/{max_attempts}...",
             "error": str(error),
         }
 
@@ -549,7 +549,7 @@ class LLMService:
         payload = dict(base_event or {})
         error_type, _ = cls._describe_stream_error(error)
         if isinstance(error, (LLMConnectionError, LLMTimeoutError, LLMRateLimitError)) and attempts_used >= max_attempts:
-            user_message = f"模型服务连接失败，已自动重试 {max_attempts} 次仍未恢复。请稍后重试或切换可用账号。"
+            user_message = f"Kết nối dịch vụ mô hình thất bại và vẫn chưa phục hồi sau {max_attempts} lần tự động thử lại. Vui lòng thử lại sau hoặc chuyển sang tài khoản khả dụng."
         else:
             user_message = str(payload.get("user_message") or str(error) or "LLM streaming request failed").strip()
         return {

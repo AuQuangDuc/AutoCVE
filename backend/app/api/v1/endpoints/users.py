@@ -18,9 +18,9 @@ async def read_users(
     db: AsyncSession = Depends(get_db),
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
-    search: Optional[str] = Query(None, description="搜索关键词"),
-    role: Optional[str] = Query(None, description="角色筛选"),
-    is_active: Optional[bool] = Query(None, description="状态筛选"),
+    search: Optional[str] = Query(None, description="Từ khóa tìm kiếm"),
+    role: Optional[str] = Query(None, description="Lọc theo vai trò"),
+    is_active: Optional[bool] = Query(None, description="Lọc theo trạng thái"),
     current_user: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
@@ -39,12 +39,12 @@ async def read_users(
         query = query.where(search_filter)
         count_query = count_query.where(search_filter)
     
-    # 角色筛选
+    # Lọc theo vai trò
     if role:
         query = query.where(User.role == role)
         count_query = count_query.where(User.role == role)
     
-    # 状态筛选
+    # Lọc theo trạng thái
     if is_active is not None:
         query = query.where(User.is_active == is_active)
         count_query = count_query.where(User.is_active == is_active)
@@ -80,7 +80,7 @@ async def create_user(
     if user:
         raise HTTPException(
             status_code=400,
-            detail="该邮箱已被注册",
+            detail="Email này đã được đăng ký",
         )
     
     db_user = User(
@@ -147,7 +147,7 @@ async def read_user(
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalars().first()
     if not user:
-        raise HTTPException(status_code=404, detail="用户不存在")
+        raise HTTPException(status_code=404, detail="Người dùng không tồn tại")
     return user
 
 @router.put("/{user_id}", response_model=UserSchema)
@@ -164,7 +164,7 @@ async def update_user(
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalars().first()
     if not user:
-        raise HTTPException(status_code=404, detail="用户不存在")
+        raise HTTPException(status_code=404, detail="Người dùng không tồn tại")
     
     update_data = user_in.model_dump(exclude_unset=True)
     
@@ -190,16 +190,16 @@ async def delete_user(
     删除用户（仅管理员）
     """
     if user_id == current_user.id:
-        raise HTTPException(status_code=400, detail="不能删除自己的账户")
+        raise HTTPException(status_code=400, detail="Không thể xóa tài khoản của chính mình")
     
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalars().first()
     if not user:
-        raise HTTPException(status_code=404, detail="用户不存在")
+        raise HTTPException(status_code=404, detail="Người dùng không tồn tại")
     
     await db.delete(user)
     await db.commit()
-    return {"message": "用户已删除"}
+    return {"message": "Đã xóa người dùng"}
 
 @router.post("/{user_id}/toggle-status", response_model=UserSchema)
 async def toggle_user_status(
@@ -208,15 +208,15 @@ async def toggle_user_status(
     current_user: User = Depends(deps.get_current_active_superuser),
 ) -> Any:
     """
-    切换用户状态（启用/禁用）
+    切换用户状态（Bật/Tắt）
     """
     if user_id == current_user.id:
-        raise HTTPException(status_code=400, detail="不能禁用自己的账户")
+        raise HTTPException(status_code=400, detail="Không thể vô hiệu hóa tài khoản của chính mình")
     
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalars().first()
     if not user:
-        raise HTTPException(status_code=404, detail="用户不存在")
+        raise HTTPException(status_code=404, detail="Người dùng không tồn tại")
     
     user.is_active = not user.is_active
     await db.commit()

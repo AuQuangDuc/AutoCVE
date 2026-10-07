@@ -621,10 +621,10 @@ def test_query_loop_requires_terminal_action_and_nudges_plain_summary_without_to
     assert result.completion_mode is None
     assert state.messages[-1].name == "terminal_action_nudge"
     assert state.messages[-1].content
-    assert "下一条 assistant 响应必须满足以下二选一" in state.messages[-1].content
-    assert "必须立即调用 Read/Grep/Glob/Skill/PowerShell" in state.messages[-1].content
-    assert '输出严格可解析的 {"findings": [...], "summary": "..."} JSON' in state.messages[-1].content
-    assert "继续就必须实际调用工具" in state.messages[-1].content
+    assert "Phản hồi assistant tiếp theo phải chọn một trong hai hướng" in state.messages[-1].content
+    assert "phải gọi ngay Read/Grep/Glob/Skill/PowerShell" in state.messages[-1].content
+    assert 'xuất JSON có thể parse nghiêm ngặt dạng {"findings": [...], "summary": "..."}' in state.messages[-1].content
+    assert "Muốn tiếp tục thì phải gọi công cụ" in state.messages[-1].content
     assert state.tool_use_context["missing_terminal_action_nudge_count"] == 1
     assert snapshot.turns[-1].status == "terminal_action_nudge"
 

@@ -523,7 +523,7 @@ class AnalysisAgent(BaseAgent):
                     
                     if empty_retry_count >= 3:
                         logger.error(f"[{self.name}] Too many empty responses, generating fallback result")
-                        error_message = "连续收到空响应，使用回退结果"
+                        error_message = "Liên tiếp nhận phản hồi rỗng, sử dụng kết quả fallback"
                         await self.emit_event("warning", error_message)
                         # 🔥 不是直接 break，而是尝试生成一个回退结果
                         break
@@ -727,7 +727,7 @@ Final Answer:""",
                 )
                 return AgentResult(
                     success=False,
-                    error="任务已取消",
+                    error="Nhiệm vụ đã bị hủy",
                     data={"findings": all_findings},
                     iterations=self._iteration,
                     tool_calls=self._tool_calls,

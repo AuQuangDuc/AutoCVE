@@ -37,7 +37,7 @@ FINDING_SYSTEM_PROMPT = """你是 AutoCVE 的高级漏洞挖掘 Agent，你的�
 6. 你最终输出的结果应是你认为符合CVE条件的漏洞内容、漏洞位置、完整 source→sink 利用链、基于源码推导的可复现 POC以及修复建议。
 7. 每一个发现必须回答"攻击者如何从外部触发它"，无法从外部触发的不报告。
 8. 你需要尽可能地扫描整个项目，不放过任何一个符合CVE条件的漏洞，而不是在发现1-2个漏洞后就停止审计。
-9. 你接下来的所有回复内容尽量用中文回复，不要使用英文
+9. Mọi phần giải thích, kết luận và báo cáo tiếp theo phải ưu tiên dùng tiếng Việt. Chỉ giữ nguyên tiếng Anh cho mã nguồn, đường dẫn, tên hàm, tên công cụ, thuật ngữ/ký hiệu bảo mật và các giá trị kỹ thuật cần thiết.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -225,7 +225,7 @@ FinalizeFinding 的参数必须是一个对象，包含：
 
 根据我所得到的确切消息，你审计的这个项目中有着不止一个高危/严重漏洞，你需要尽可能把他们都找到，这是对你能力的一场测试。这场测试计分如下：发现1个严重漏洞+30分，一个RCE或者反序列化漏洞+25分，一个高危漏洞+20分，一个中危漏洞+10分，如果给出一个不存在或者利用链没闭合的漏洞误报，-40分，及格线50分，满分100分。你是一名优秀的代码审计方面的研究员，我期待你能在这场尽可能获得高分。现在开始审计这个项目。
 
-请优先使用中文回复。优先继续调用工具收集证据，而不是过早结束。只有在证据闭合或已充分审计后，才给出结论。"""
+Ưu tiên trả lời bằng tiếng Việt. Hãy tiếp tục dùng công cụ để thu thập bằng chứng thay vì kết thúc quá sớm. Chỉ kết luận khi chuỗi bằng chứng đã khép kín hoặc phạm vi kiểm tra đã đủ sâu và rộng."""
 
 
 class FindingAgent(AnalysisWorkflowAgent):
@@ -490,7 +490,7 @@ class FindingAgent(AnalysisWorkflowAgent):
                 raw_error = str((event or {}).get("error") or "").strip()
                 user_message = str((event or {}).get("user_message") or "").strip()
                 if user_message and raw_error and raw_error != user_message:
-                    display_message = f"{user_message} 原始错误：{raw_error}"
+                    display_message = f"{user_message} Lỗi gốc: {raw_error}"
                 else:
                     display_message = user_message or raw_error or "LLM streaming request failed."
                 await self.emit_event(
@@ -535,24 +535,24 @@ class FindingAgent(AnalysisWorkflowAgent):
             if stop_reason == RuntimeStopReason.QUOTA_EXHAUSTED.value or any(
                 term in lower_message for term in ("insufficient_quota", "quota exceeded", "billing", "余额不足", "资源包")
             ):
-                suffix = f"原始错误：{message}" if message else "模型账户余额或配额不足。"
-                return f"Finding 未完成：模型余额/配额不足，可补充额度或切换模型后继续同一审计。{suffix}"
+                suffix = f"Lỗi gốc: {message}" if message else "Tài khoản mô hình không đủ số dư hoặc quota."
+                return f"Finding chưa hoàn tất: mô hình không đủ số dư/quota. Hãy bổ sung quota hoặc đổi mô hình rồi tiếp tục cùng phiên kiểm tra. {suffix}"
             if stop_reason == RuntimeStopReason.MODEL_STREAM_TIMEOUT.value:
-                suffix = f"原始错误：{message}" if message else "模型流连接超过配置时间。"
-                return f"Finding 未完成：模型流超时，自动重试已耗尽，可继续同一审计。{suffix}"
+                suffix = f"Lỗi gốc: {message}" if message else "Kết nối luồng mô hình vượt quá thời gian cấu hình."
+                return f"Finding chưa hoàn tất: luồng mô hình hết thời gian và đã dùng hết số lần tự động thử lại. Có thể tiếp tục cùng phiên kiểm tra. {suffix}"
             if stop_reason == RuntimeStopReason.TOOL_TIMEOUT.value or "工具执行超时" in message:
-                suffix = f"原始错误：{message}" if message else "工具执行超过配置时间。"
-                return f"Finding 未完成：工具超时，请缩小搜索范围后继续审计。{suffix}"
+                suffix = f"Lỗi gốc: {message}" if message else "Công cụ chạy quá thời gian cấu hình."
+                return f"Finding chưa hoàn tất: công cụ hết thời gian. Hãy thu hẹp phạm vi tìm kiếm rồi tiếp tục kiểm tra. {suffix}"
             if stop_reason in {"timeout", RuntimeStopReason.AGENT_TIMEOUT.value}:
-                suffix = f"原始错误：{message}" if message else "运行超过配置的时间限制。"
-                return f"Finding 未完成：Agent 总时间超时，未进入最终提交阶段。{suffix}"
+                suffix = f"Lỗi gốc: {message}" if message else "Thời gian chạy vượt quá giới hạn cấu hình."
+                return f"Finding chưa hoàn tất: Agent đã hết tổng thời gian chạy và chưa tới giai đoạn gửi kết quả cuối. {suffix}"
             if stop_reason == RuntimeStopReason.MODEL_ERROR.value:
-                suffix = f"原始错误：{message}" if message else "原始错误未返回详细信息。"
-                return f"Finding 未完成：模型流式请求失败，未能继续到 FinalizeFinding。{suffix}"
+                suffix = f"Lỗi gốc: {message}" if message else "Không có chi tiết lỗi gốc."
+                return f"Finding chưa hoàn tất: yêu cầu streaming tới mô hình thất bại và không thể tiếp tục tới FinalizeFinding. {suffix}"
             if stop_reason == RuntimeStopReason.PERSISTENCE_ERROR.value:
-                suffix = f"原始错误：{message}" if message else "原始错误未返回详细信息。"
-                return f"Finding 未完成：审计会话消息持久化失败，未能继续到 FinalizeFinding。{suffix}"
-        return "Finding 未完成：runtime ended without FinalizeFinding or structured final findings."
+                suffix = f"Lỗi gốc: {message}" if message else "Không có chi tiết lỗi gốc."
+                return f"Finding chưa hoàn tất: không thể lưu bền vững message của phiên kiểm tra nên không thể tiếp tục tới FinalizeFinding. {suffix}"
+        return "Finding chưa hoàn tất: runtime kết thúc mà không có FinalizeFinding hoặc kết quả finding cuối có cấu trúc."
 
     @staticmethod
     def _coerce_runtime_completion_mode(runner_result) -> RuntimeCompletionMode | None:
@@ -1397,44 +1397,44 @@ class FindingAgent(AnalysisWorkflowAgent):
 
         recon_summary = ((recon_data.get("summary") or recon_data.get("data", {}).get("summary") or "").strip())
         if not recon_summary:
-            recon_summary = "Recon 上下文不完整，本次审计将基于仓库结构和直接源码阅读继续推进。"
+            recon_summary = "Ngữ cảnh Recon chưa đầy đủ; lượt kiểm tra này sẽ tiếp tục dựa trên cấu trúc kho mã và việc đọc trực tiếp mã nguồn."
 
-        message = f"""请直接审计代码仓库，寻找有源码证据支撑的 CVE 级漏洞。除代码、路径、函数名、工具名和漏洞英文缩写外，审计说明请使用简体中文。
-项目信息：
-- 名称：{project_info.get('name', 'unknown')}
-- 根目录：{project_info.get('root', '.')}
-- 语言：{json.dumps(languages, ensure_ascii=False)}
-- 框架：{json.dumps(frameworks, ensure_ascii=False)}
-- 数据库：{json.dumps(databases, ensure_ascii=False)}
+        message = f"""Hãy trực tiếp kiểm tra kho mã để tìm các lỗ hổng cấp CVE có bằng chứng từ mã nguồn. Ngoại trừ mã, đường dẫn, tên hàm, tên công cụ và các chữ viết tắt bảo mật tiếng Anh, phần giải thích kiểm tra phải sử dụng tiếng Việt.
+Thông tin dự án:
+- Tên: {project_info.get('name', 'unknown')}
+- Thư mục gốc: {project_info.get('root', '.')}
+- Ngôn ngữ: {json.dumps(languages, ensure_ascii=False)}
+- Framework: {json.dumps(frameworks, ensure_ascii=False)}
+- Cơ sở dữ liệu: {json.dumps(databases, ensure_ascii=False)}
 
-优先路径：
+Đường dẫn ưu tiên:
 {json.dumps(priority_paths[:25], ensure_ascii=False, indent=2)}
 
-入口点：
+Điểm vào:
 {json.dumps(entry_points, ensure_ascii=False, indent=2)}
 
-目标文件：
+Tệp mục tiêu:
 {json.dumps(target_files[:50], ensure_ascii=False, indent=2)}
 
-排除模式：
+Mẫu loại trừ:
 {json.dumps(exclude_patterns[:20], ensure_ascii=False, indent=2)}
 
-推荐扫描器：
+Scanner được khuyến nghị:
 {json.dumps(recommended_scanners, ensure_ascii=False, indent=2)}
 
-Recon 摘要：{recon_summary}
+Tóm tắt Recon: {recon_summary}
 
-审计任务上下文：
-用户提供的审计提示：
+Ngữ cảnh nhiệm vụ kiểm tra:
+Gợi ý kiểm tra do người dùng cung cấp:
 {json.dumps(focus_hints, ensure_ascii=False, indent=2)}
 
-{task_context or '未提供额外任务上下文。'}
+{task_context or 'Không có ngữ cảnh nhiệm vụ bổ sung.'}
 
-审计优先级：
-- 优先审计目标文件、入口点、优先路径、认证鉴权链、敏感状态变更和多步业务逻辑。
-- 关注任何可由外部触发且达到 CVE 级别的问题，不要只局限于预设漏洞类型。
-- 不要依赖 Scan Agent 输出；结论必须基于直接源码阅读和推理。
-- 持续审计，直到能证明一条 CVE 级利用链，或说明当前候选为什么达不到报告标准。"""
+Ưu tiên kiểm tra:
+- Ưu tiên tệp mục tiêu, điểm vào, đường dẫn ưu tiên, chuỗi xác thực/phân quyền, thay đổi trạng thái nhạy cảm và logic nghiệp vụ nhiều bước.
+- Tập trung vào mọi vấn đề có thể kích hoạt từ bên ngoài và đạt mức CVE; không giới hạn ở các loại lỗ hổng đặt trước.
+- Không phụ thuộc vào đầu ra của Scan Agent; kết luận phải dựa trên việc đọc trực tiếp mã nguồn và suy luận.
+- Tiếp tục kiểm tra cho tới khi chứng minh được chuỗi khai thác cấp CVE hoặc giải thích vì sao ứng viên hiện tại chưa đạt tiêu chuẩn báo cáo."""
         message = message + "\n\n" + skill_guidance
         preloaded_skill_context = context.get("preloaded_skill_context")
         if preloaded_skill_context:
@@ -1468,40 +1468,40 @@ Recon 摘要：{recon_summary}
                 "authz_paths": runtime_state.coverage.authz_paths[:12],
                 "active_candidate_id": runtime_state.active_candidate_id,
                     "phase_transition_rules": [
-                        "当存在已闭合利用链的候选时，切换到 report_finalization。",
-                        "只要仍有可运行候选或跟进预算，就保持 evidence_collection。",
-                        "当队列已饱和且只剩可进入报告的证据时，切换到 report_finalization。",
-                        "最终化期间保留当前最强候选，停止开启新候选。",
+                        "Khi có ứng viên với chuỗi khai thác đã khép kín, chuyển sang report_finalization.",
+                        "Khi vẫn còn ứng viên có thể xử lý hoặc còn ngân sách follow-up, giữ ở evidence_collection.",
+                        "Khi hàng đợi đã đầy và chỉ còn bằng chứng đủ để lập báo cáo, chuyển sang report_finalization.",
+                        "Trong giai đoạn hoàn tất, giữ ứng viên mạnh nhất hiện tại và không mở ứng viên mới.",
                 ],
             }
             generation_summary = {
-                "初始队列生成规则": {
+                "quy_tac_tao_hang_doi_ban_dau": {
                     "max_active_candidates": runtime_state.plan.max_active_candidates,
                     "initial_queue_suppressed": runtime_state.metrics.get("queue.initial_suppressed_candidates", 0),
                     "generation_rules": [
-                        "保持活跃种子队列不超过 max_active_candidates。",
-                        "填充剩余种子槽位前，优先保证漏洞类型多样性。",
-                        "超额候选放入 discarded_candidates，并设置 discard_reason=initial_queue_cap。",
+                        "Giữ hàng đợi seed đang hoạt động không vượt quá max_active_candidates.",
+                        "Ưu tiên đa dạng loại lỗ hổng trước khi lấp các vị trí seed còn lại.",
+                        "Đưa ứng viên vượt giới hạn vào discarded_candidates và đặt discard_reason=initial_queue_cap.",
                     ],
                 }
             }
             message = (
                 message
-                + "\n\n覆盖优先运行计划：\n"
+                + "\n\nKế hoạch thực thi ưu tiên độ bao phủ:\n"
                 + json.dumps(coverage_summary, ensure_ascii=False, indent=2)
-                + "\n\n初始队列生成规则：\n"
+                + "\n\nQuy tắc tạo hàng đợi ban đầu:\n"
                 + json.dumps(generation_summary, ensure_ascii=False, indent=2)
-                + "\n\n初始候选队列：\n"
+                + "\n\nHàng đợi ứng viên ban đầu:\n"
                 + json.dumps(queue_preview, ensure_ascii=False, indent=2)
             )
         return message
 
     def _build_summary_prompt(self) -> str:
         return (
-            "现在停止并交付最终源码漏洞报告。"
-            "最多返回 3 个已经在先前观察中闭合利用链的最高价值发现。"
-            "如果尚未运行动态验证，请保持 verdict='candidate'，并在 verification_notes 中说明剩余证据缺口。"
-            "不要再输出 Action。只能返回 'Final Answer: {...}' 或纯 JSON。"
+            "Hãy dừng và bàn giao báo cáo lỗ hổng mã nguồn cuối cùng. "
+            "Chỉ trả về tối đa 3 finding có giá trị cao nhất với chuỗi khai thác đã khép kín trong các quan sát trước. "
+            "Nếu chưa chạy xác minh động, giữ verdict='candidate' và nêu khoảng trống bằng chứng còn lại trong verification_notes. "
+            "Không xuất Action nữa. Chỉ trả về 'Final Answer: {...}' hoặc JSON thuần."
         )
 
     async def _recover_final_result(self) -> Dict[str, Any]:

@@ -83,28 +83,28 @@ class ThinkTool(AgentTool):
         if not thought or not thought.strip():
             return ToolResult(
                 success=False,
-                error="思考内容不能为空",
+                error="Nội dung suy luận không được để trống",
             )
         
         thought = thought.strip()
         
         # 根据类别添加标记
         category_labels = {
-            "analysis": "🔍 分析",
-            "planning": "📋 规划",
-            "evaluation": "⚖️ 评估",
-            "decision": "🎯 决策",
-            "general": "💭 思考",
+            "analysis": "🔍 Phân tích",
+            "planning": "📋 Lập kế hoạch",
+            "evaluation": "⚖️ Đánh giá",
+            "decision": "🎯 Quyết định",
+            "general": "💭 Suy luận",
         }
         
-        label = category_labels.get(category, "💭 思考")
+        label = category_labels.get(category, "💭 Suy luận")
         
         logger.debug(f"Think tool called: [{label}] {thought[:100]}...")
         
         return ToolResult(
             success=True,
             data={
-                "message": f"思考已记录 ({len(thought)} 字符)",
+                "message": f"Đã ghi nhận suy luận ({len(thought)} ký tự)",
                 "category": category,
                 "label": label,
             },
@@ -168,7 +168,7 @@ class ReflectTool(AgentTool):
         return ToolResult(
             success=True,
             data={
-                "message": "反思已记录",
+                "message": "Đã ghi nhận phần tự đánh giá",
                 "reflection": reflection,
             },
             metadata=reflection,

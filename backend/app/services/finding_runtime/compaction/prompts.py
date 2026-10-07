@@ -6,7 +6,7 @@ NO_TOOLS_PREAMBLE = """关键要求：只能用文本回复，禁止调用任何
 - 上方对话已经包含你需要的全部上下文。
 - 工具调用会被拒绝，并浪费你唯一的一轮回复，导致任务失败。
 - 你的完整回复必须是纯文本：先给出一个 <analysis> 块，再给出一个 <summary> 块。
-- 请使用简体中文撰写总结；代码、路径、函数名和协议标签可以保留原文。
+- Hãy viết phần tóm tắt bằng tiếng Việt; mã nguồn, đường dẫn, tên hàm và nhãn giao thức có thể giữ nguyên.
 """
 
 NO_TOOLS_TRAILER = """
@@ -125,7 +125,7 @@ def build_compaction_prompt(*, mode: str, custom_instructions: str | None = None
     instructions_block = ""
     if custom_instructions:
         instructions_block = (
-            "\n\n额外总结要求：\n"
+            "\n\nYêu cầu tóm tắt bổ sung:\n"
             f"{custom_instructions.strip()}\n"
         )
     return f"{NO_TOOLS_PREAMBLE}{prompt_body}{instructions_block}\n{NO_TOOLS_TRAILER}"
@@ -146,7 +146,7 @@ def get_compact_user_summary_message(summary: str, suppress_follow_up_questions:
     formatted = format_compact_summary(summary)
     lines = [formatted]
     if transcript_path:
-        lines.append(f"转录引用：{transcript_path}")
+        lines.append(f"Tham chiếu transcript: {transcript_path}")
     if not suppress_follow_up_questions:
-        lines.append("对于尚未解决的缺口，后续可能仍需提问。")
+        lines.append("Với các khoảng trống chưa được giải quyết, có thể vẫn cần hỏi thêm ở lượt sau.")
     return "\n\n".join(line for line in lines if line)

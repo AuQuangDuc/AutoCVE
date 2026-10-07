@@ -62,7 +62,7 @@ async def get_project_members(
     # Verify project exists
     project = await db.get(Project, project_id)
     if not project:
-        raise HTTPException(status_code=404, detail="项目不存在")
+        raise HTTPException(status_code=404, detail="Dự án không tồn tại")
     
     result = await db.execute(
         select(ProjectMember)
@@ -86,16 +86,16 @@ async def add_project_member(
     # Verify project exists
     project = await db.get(Project, project_id)
     if not project:
-        raise HTTPException(status_code=404, detail="项目不存在")
+        raise HTTPException(status_code=404, detail="Dự án không tồn tại")
     
     # Check if user is project owner or admin
     if project.owner_id != current_user.id and not current_user.is_superuser:
-        raise HTTPException(status_code=403, detail="权限不足")
+        raise HTTPException(status_code=403, detail="Không đủ quyền")
     
     # Check if user exists
     user = await db.get(User, member_in.user_id)
     if not user:
-        raise HTTPException(status_code=404, detail="用户不存在")
+        raise HTTPException(status_code=404, detail="Người dùng không tồn tại")
     
     # Check if already a member
     existing = await db.execute(
@@ -106,7 +106,7 @@ async def add_project_member(
         )
     )
     if existing.scalars().first():
-        raise HTTPException(status_code=400, detail="用户已是项目成员")
+        raise HTTPException(status_code=400, detail="Người dùng đã là thành viên dự án")
     
     # Create member
     member = ProjectMember(
@@ -142,11 +142,11 @@ async def update_project_member(
     # Verify project exists
     project = await db.get(Project, project_id)
     if not project:
-        raise HTTPException(status_code=404, detail="项目不存在")
+        raise HTTPException(status_code=404, detail="Dự án không tồn tại")
     
     # Check permissions
     if project.owner_id != current_user.id and not current_user.is_superuser:
-        raise HTTPException(status_code=403, detail="权限不足")
+        raise HTTPException(status_code=403, detail="Không đủ quyền")
     
     # Get member
     result = await db.execute(
@@ -155,7 +155,7 @@ async def update_project_member(
     )
     member = result.scalars().first()
     if not member:
-        raise HTTPException(status_code=404, detail="成员不存在")
+        raise HTTPException(status_code=404, detail="Thành viên không tồn tại")
     
     # Update fields
     if member_update.role:
@@ -188,11 +188,11 @@ async def remove_project_member(
     # Verify project exists
     project = await db.get(Project, project_id)
     if not project:
-        raise HTTPException(status_code=404, detail="项目不存在")
+        raise HTTPException(status_code=404, detail="Dự án không tồn tại")
     
     # Check permissions
     if project.owner_id != current_user.id and not current_user.is_superuser:
-        raise HTTPException(status_code=403, detail="权限不足")
+        raise HTTPException(status_code=403, detail="Không đủ quyền")
     
     # Get member
     result = await db.execute(
@@ -201,12 +201,12 @@ async def remove_project_member(
     )
     member = result.scalars().first()
     if not member:
-        raise HTTPException(status_code=404, detail="成员不存在")
+        raise HTTPException(status_code=404, detail="Thành viên không tồn tại")
     
     await db.delete(member)
     await db.commit()
     
-    return {"message": "成员已移除"}
+    return {"message": "Đã xóa thành viên"}
 
 
 

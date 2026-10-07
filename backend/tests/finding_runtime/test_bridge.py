@@ -383,9 +383,9 @@ def test_bridge_finalizer_prompt_does_not_force_empty_findings_for_incomplete_au
 
     prompt = bridge._default_finalizer_prompts()[0]
 
-    assert "只有在审计已经完成" in prompt
-    assert "如果仍需继续查看文件、验证调用链、补齐 source/sink/PoC/影响面" in prompt
-    assert "证据不足" not in prompt
+    assert "Chỉ gọi FinalizeFinding khi audit đã hoàn tất" in prompt
+    assert "Nếu vẫn cần đọc file, xác minh call chain hoặc bổ sung source/sink/PoC/impact" in prompt
+    assert "thiếu bằng chứng" not in prompt.lower()
 
 
 def test_bridge_fallback_summary_uses_last_assistant_message():
@@ -399,7 +399,7 @@ def test_bridge_fallback_summary_uses_last_assistant_message():
 
     summary = bridge._fallback_summary(snapshot)
 
-    assert "最后一条 assistant 回复" in summary
+    assert "Phản hồi assistant cuối cùng" in summary
     assert "OpenApiController" in summary
 
 
@@ -429,8 +429,8 @@ def test_bridge_fallback_payload_recovers_findings_from_assistant_transcript():
     assert len(payload["recovered_candidates"]) >= 2
     assert {finding["vulnerability_type"] for finding in payload["recovered_candidates"]} >= {"idor", "ssrf"}
     assert all(candidate["needs_verification"] is True for candidate in payload["recovered_candidates"])
-    assert "候选线索" in payload["summary"]
-    assert "不是最终漏洞结论" in payload["summary"]
+    assert "ứng viên khôi phục" in payload["summary"]
+    assert "không phải kết luận lỗ hổng cuối" in payload["summary"]
 
 
 def test_bridge_fallback_payload_marks_recovered_candidates_as_incomplete():
@@ -454,7 +454,7 @@ def test_bridge_fallback_payload_marks_recovered_candidates_as_incomplete():
     assert payload["runtime_completion_mode"] == "incomplete"
     assert payload["is_final"] is False
     assert payload["requires_retry"] is True
-    assert "不是最终漏洞结论" in payload["summary"]
+    assert "không phải kết luận lỗ hổng cuối" in payload["summary"]
 
 
 def test_bridge_exposes_restored_style_runtime_tools():
@@ -545,12 +545,12 @@ def test_bridge_skips_system_transcript_messages_when_building_model_payload():
 
 
 def test_native_tool_calling_reminder_requires_actual_tool_call_or_terminal_json():
-    assert "工具调用协议" in NATIVE_TOOL_CALLING_REMINDER
-    assert "必须在同一条 assistant 响应中实际发起原生结构化工具调用" in NATIVE_TOOL_CALLING_REMINDER
-    assert "如果还需要证据：直接调用 Read/Grep/Glob/Skill/PowerShell" in NATIVE_TOOL_CALLING_REMINDER
-    assert '输出可解析的 {"findings": [...], "summary": "..."} JSON' in NATIVE_TOOL_CALLING_REMINDER
-    assert "禁止只回复“我将继续/让我继续/下一步我会...”" in NATIVE_TOOL_CALLING_REMINDER
-    assert "不要输出伪工具语法" in NATIVE_TOOL_CALLING_REMINDER
+    assert "Giao thức gọi công cụ" in NATIVE_TOOL_CALLING_REMINDER
+    assert "phải thực sự phát native structured tool call trong cùng phản hồi assistant" in NATIVE_TOOL_CALLING_REMINDER
+    assert "gọi trực tiếp Read/Grep/Glob/Skill/PowerShell" in NATIVE_TOOL_CALLING_REMINDER
+    assert 'xuất JSON có thể parse dạng {"findings": [...], "summary": "..."}' in NATIVE_TOOL_CALLING_REMINDER
+    assert "Không chỉ trả lời rằng sẽ tiếp tục mà không gọi công cụ" in NATIVE_TOOL_CALLING_REMINDER
+    assert "Không xuất cú pháp giả gọi công cụ" in NATIVE_TOOL_CALLING_REMINDER
 
 
 def test_bridge_extracts_json_from_mixed_final_answer():
@@ -581,7 +581,7 @@ def test_runtime_model_client_formats_tool_error_result_as_structured_feedback()
 
     assert mapped is not None
     assert mapped["role"] == "user"
-    assert "工具执行失败" in mapped["content"]
+    assert "Thực thi công cụ thất bại" in mapped["content"]
     assert '"tool_name": "FinalizeFinding"' in mapped["content"]
     assert '"is_error": true' in mapped["content"]
     assert '"status": "invalid"' in mapped["content"]
@@ -1157,7 +1157,7 @@ def test_runtime_model_client_tool_use_history_is_mapped_as_user_context_note():
     assert mapped is not None
     assert mapped["role"] == "user"
     assert "Tool Call:" not in mapped["content"]
-    assert "先前工具请求历史" in mapped["content"]
+    assert "Lịch sử yêu cầu công cụ trước đó" in mapped["content"]
 
 
 def test_runtime_model_client_build_messages_uses_native_openai_tool_history():
@@ -1207,4 +1207,4 @@ def test_runtime_model_client_assistant_history_sanitizes_legacy_text_tool_calls
     assert mapped is not None
     assert mapped["role"] == "user"
     assert "Tool Call:" not in mapped["content"]
-    assert "先前工具请求历史" in mapped["content"]
+    assert "Lịch sử yêu cầu công cụ trước đó" in mapped["content"]

@@ -1,6 +1,6 @@
 """
 漏洞验证专用工具
-支持各类经典漏洞的沙箱验证测试
+Hỗ trợ各类经典漏洞的沙箱验证测试
 """
 
 import asyncio
@@ -51,7 +51,7 @@ class CommandInjectionTestTool(AgentTool):
     """
     命令注入漏洞测试工具
 
-    支持多种语言和框架，自动构建测试环境
+    Hỗ trợ多种语言和框架，自动构建测试环境
     """
 
     def __init__(self, sandbox_manager: Optional[SandboxManager] = None, project_root: str = "."):
@@ -67,7 +67,7 @@ class CommandInjectionTestTool(AgentTool):
     def description(self) -> str:
         return """专门测试命令注入漏洞的工具。
 
-支持语言: PHP, Python, JavaScript, Java, Go, Ruby, Shell
+Hỗ trợ语言: PHP, Python, JavaScript, Java, Go, Ruby, Shell
 
 输入:
 - target_file: 目标文件路径
@@ -141,12 +141,12 @@ class CommandInjectionTestTool(AgentTool):
             logger.warning(f"Sandbox init failed: {e}")
 
         if not self.sandbox_manager.is_available:
-            return ToolResult(success=False, error="沙箱环境不可用")
+            return ToolResult(success=False, error="Sandbox không khả dụng")
 
         # 读取目标文件
         full_path = os.path.join(self.project_root, target_file)
         if not os.path.exists(full_path):
-            return ToolResult(success=False, error=f"文件不存在: {target_file}")
+            return ToolResult(success=False, error=f"Tệp không tồn tại: {target_file}")
 
         with open(full_path, 'r', encoding='utf-8', errors='ignore') as f:
             code = f.read()
@@ -158,7 +158,7 @@ class CommandInjectionTestTool(AgentTool):
         # 根据语言构建测试
         result = await self._test_by_language(language, code, param_name, test_command)
 
-        # 分析结果
+        # Kết quả phân tích
         is_vulnerable = False
         evidence = None
         poc = None
@@ -463,7 +463,7 @@ class SqlInjectionTestTool(AgentTool):
     def description(self) -> str:
         return """专门测试 SQL 注入漏洞的工具。
 
-支持数据库: MySQL, PostgreSQL, SQLite, Oracle, MSSQL
+Hỗ trợ数据库: MySQL, PostgreSQL, SQLite, Oracle, MSSQL
 
 输入:
 - target_file: 目标文件路径
@@ -518,12 +518,12 @@ class SqlInjectionTestTool(AgentTool):
             logger.warning(f"Sandbox init failed: {e}")
 
         if not self.sandbox_manager.is_available:
-            return ToolResult(success=False, error="沙箱环境不可用")
+            return ToolResult(success=False, error="Sandbox không khả dụng")
 
         # 读取目标文件
         full_path = os.path.join(self.project_root, target_file)
         if not os.path.exists(full_path):
-            return ToolResult(success=False, error=f"文件不存在: {target_file}")
+            return ToolResult(success=False, error=f"Tệp không tồn tại: {target_file}")
 
         with open(full_path, 'r', encoding='utf-8', errors='ignore') as f:
             code = f.read()
@@ -536,7 +536,7 @@ class SqlInjectionTestTool(AgentTool):
         # 执行测试
         result = await self._test_sql_injection(language, code, param_name, payload)
 
-        # 分析结果
+        # Kết quả phân tích
         is_vulnerable = False
         evidence = None
 
@@ -645,7 +645,7 @@ request = MockRequest()
             return await self.sandbox_manager.execute_command(f"python3 -c '{escaped}'", timeout=30)
 
         else:
-            return {"exit_code": -1, "stdout": "", "stderr": f"不支持的语言: {language}"}
+            return {"exit_code": -1, "stdout": "", "stderr": f"Ngôn ngữ không được hỗ trợ: {language}"}
 
 
 # ============ XSS 测试工具 ============
@@ -685,7 +685,7 @@ class XssTestTool(AgentTool):
     def description(self) -> str:
         return """专门测试 XSS (跨站脚本) 漏洞的工具。
 
-支持类型: Reflected XSS, Stored XSS, DOM XSS
+Hỗ trợ类型: Reflected XSS, Stored XSS, DOM XSS
 
 输入:
 - target_file: 目标文件路径
@@ -721,12 +721,12 @@ class XssTestTool(AgentTool):
             logger.warning(f"Sandbox init failed: {e}")
 
         if not self.sandbox_manager.is_available:
-            return ToolResult(success=False, error="沙箱环境不可用")
+            return ToolResult(success=False, error="Sandbox không khả dụng")
 
         # 读取目标文件
         full_path = os.path.join(self.project_root, target_file)
         if not os.path.exists(full_path):
-            return ToolResult(success=False, error=f"文件不存在: {target_file}")
+            return ToolResult(success=False, error=f"Tệp không tồn tại: {target_file}")
 
         with open(full_path, 'r', encoding='utf-8', errors='ignore') as f:
             code = f.read()
@@ -739,7 +739,7 @@ class XssTestTool(AgentTool):
         # 执行测试
         result = await self._test_xss(language, code, param_name, payload)
 
-        # 分析结果 - 检查 payload 是否被反射
+        # Kết quả phân tích - 检查 payload 是否被反射
         is_vulnerable = False
         evidence = None
 
@@ -846,7 +846,7 @@ request = MockRequest()
             return await self.sandbox_manager.execute_command(f"python3 -c '{escaped}'", timeout=30)
 
         else:
-            return {"exit_code": -1, "stdout": "", "stderr": f"不支持的语言: {language}"}
+            return {"exit_code": -1, "stdout": "", "stderr": f"Ngôn ngữ không được hỗ trợ: {language}"}
 
 
 # ============ 路径遍历测试工具 ============
@@ -933,12 +933,12 @@ class PathTraversalTestTool(AgentTool):
             logger.warning(f"Sandbox init failed: {e}")
 
         if not self.sandbox_manager.is_available:
-            return ToolResult(success=False, error="沙箱环境不可用")
+            return ToolResult(success=False, error="Sandbox không khả dụng")
 
         # 读取目标文件
         full_path = os.path.join(self.project_root, target_file)
         if not os.path.exists(full_path):
-            return ToolResult(success=False, error=f"文件不存在: {target_file}")
+            return ToolResult(success=False, error=f"Tệp không tồn tại: {target_file}")
 
         with open(full_path, 'r', encoding='utf-8', errors='ignore') as f:
             code = f.read()
@@ -951,7 +951,7 @@ class PathTraversalTestTool(AgentTool):
         # 执行测试
         result = await self._test_traversal(language, code, param_name, payload)
 
-        # 分析结果
+        # Kết quả phân tích
         is_vulnerable = False
         evidence = None
 
@@ -1059,7 +1059,7 @@ request = MockRequest()
             return await self.sandbox_manager.execute_command(f"python3 -c '{escaped}'", timeout=30)
 
         else:
-            return {"exit_code": -1, "stdout": "", "stderr": f"不支持的语言: {language}"}
+            return {"exit_code": -1, "stdout": "", "stderr": f"Ngôn ngữ không được hỗ trợ: {language}"}
 
 
 # ============ SSTI (服务端模板注入) 测试工具 ============
@@ -1112,7 +1112,7 @@ class SstiTestTool(AgentTool):
     def description(self) -> str:
         return """专门测试 SSTI (服务端模板注入) 漏洞的工具。
 
-支持模板引擎: Jinja2, Twig, Freemarker, Velocity, Smarty
+Hỗ trợ模板引擎: Jinja2, Twig, Freemarker, Velocity, Smarty
 
 输入:
 - target_file: 目标文件路径
@@ -1148,12 +1148,12 @@ class SstiTestTool(AgentTool):
             logger.warning(f"Sandbox init failed: {e}")
 
         if not self.sandbox_manager.is_available:
-            return ToolResult(success=False, error="沙箱环境不可用")
+            return ToolResult(success=False, error="Sandbox không khả dụng")
 
         # 读取目标文件
         full_path = os.path.join(self.project_root, target_file)
         if not os.path.exists(full_path):
-            return ToolResult(success=False, error=f"文件不存在: {target_file}")
+            return ToolResult(success=False, error=f"Tệp không tồn tại: {target_file}")
 
         with open(full_path, 'r', encoding='utf-8', errors='ignore') as f:
             code = f.read()
@@ -1175,7 +1175,7 @@ class SstiTestTool(AgentTool):
         # 执行测试
         result = await self._test_ssti(language, code, param_name, payload)
 
-        # 分析结果
+        # Kết quả phân tích
         is_vulnerable = False
         evidence = None
 
@@ -1278,7 +1278,7 @@ $_POST['{param_name}'] = '{safe_payload}';
             return await self.sandbox_manager.execute_command(f"php -r '{escaped}'", timeout=30)
 
         else:
-            return {"exit_code": -1, "stdout": "", "stderr": f"不支持的语言: {language}"}
+            return {"exit_code": -1, "stdout": "", "stderr": f"Ngôn ngữ không được hỗ trợ: {language}"}
 
 
 # ============ 反序列化测试工具 ============
@@ -1306,7 +1306,7 @@ class DeserializationTestTool(AgentTool):
     def description(self) -> str:
         return """测试不安全反序列化漏洞的工具。
 
-支持语言: PHP (unserialize), Python (pickle, yaml), Java, Ruby (Marshal)
+Hỗ trợ语言: PHP (unserialize), Python (pickle, yaml), Java, Ruby (Marshal)
 
 输入:
 - target_file: 目标文件路径
@@ -1341,7 +1341,7 @@ class DeserializationTestTool(AgentTool):
         # 读取目标文件
         full_path = os.path.join(self.project_root, target_file)
         if not os.path.exists(full_path):
-            return ToolResult(success=False, error=f"文件不存在: {target_file}")
+            return ToolResult(success=False, error=f"Tệp không tồn tại: {target_file}")
 
         with open(full_path, 'r', encoding='utf-8', errors='ignore') as f:
             code = f.read()
@@ -1494,9 +1494,9 @@ class UniversalVulnTestTool(AgentTool):
 
     @property
     def description(self) -> str:
-        return """通用漏洞测试工具，支持多种漏洞类型的自动化测试。
+        return """通用漏洞测试工具，Hỗ trợ多种漏洞类型的自动化测试。
 
-支持的漏洞类型:
+Hỗ trợ的漏洞类型:
 - command_injection (cmd/rce): 命令注入
 - sql_injection (sqli): SQL 注入
 - xss: 跨站脚本
@@ -1536,7 +1536,7 @@ class UniversalVulnTestTool(AgentTool):
         if not tester:
             return ToolResult(
                 success=False,
-                error=f"不支持的漏洞类型: {vuln_type}。支持: {list(self._testers.keys())}",
+                error=f"Loại lỗ hổng không được hỗ trợ: {vuln_type}. Hỗ trợ: {list(self._testers.keys())}",
             )
 
         # 使用默认 payload

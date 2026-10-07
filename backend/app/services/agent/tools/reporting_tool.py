@@ -73,7 +73,7 @@ class CreateVulnerabilityReportTool(AgentTool):
 
 只有在以下情况下才应该使用此工具：
 1. 漏洞已经过充分分析和验证
-2. 有明确的证据支持漏洞存在
+2. 有明确的证据Hỗ trợ漏洞存在
 3. 已经评估了漏洞的影响
 
 必需参数:
@@ -122,13 +122,13 @@ class CreateVulnerabilityReportTool(AgentTool):
         
         # 验证必需字段
         if not title or not title.strip():
-            return ToolResult(success=False, error="标题不能为空")
+            return ToolResult(success=False, error="Tiêu đề không được để trống")
         
         if not description or not description.strip():
-            return ToolResult(success=False, error="描述不能为空")
+            return ToolResult(success=False, error="Mô tả không được để trống")
         
         if not file_path or not file_path.strip():
-            return ToolResult(success=False, error="文件路径不能为空")
+            return ToolResult(success=False, error="Đường dẫn tệp không được để trống")
 
         # 🔥 v2.1: 验证文件路径存在性 - 防止幻觉
         if self.project_root:
@@ -139,11 +139,11 @@ class CreateVulnerabilityReportTool(AgentTool):
             if not os.path.isfile(full_path):
                 # 尝试作为绝对路径
                 if not (os.path.isabs(clean_path) and os.path.isfile(clean_path)):
-                    logger.warning(f"[ReportTool] 🚫 拒绝报告: 文件不存在 '{file_path}'")
+                    logger.warning(f"[ReportTool] 🚫 Từ chối báo cáo: tệp không tồn tại '{file_path}'")
                     return ToolResult(
                         success=False,
-                        error=f"无法创建报告：文件 '{file_path}' 在项目中不存在。"
-                              f"请先使用 read_file 工具验证文件存在，然后再报告漏洞。"
+                        error=f"Không thể tạo báo cáo: tệp '{file_path}' không tồn tại trong dự án. "
+                              f"Hãy dùng công cụ read_file để xác minh tệp tồn tại trước khi báo cáo lỗ hổng."
                     )
 
         # 验证严重程度
@@ -152,7 +152,7 @@ class CreateVulnerabilityReportTool(AgentTool):
         if severity not in valid_severities:
             return ToolResult(
                 success=False, 
-                error=f"无效的严重程度 '{severity}'，必须是: {', '.join(valid_severities)}"
+                error=f"Mức độ nghiêm trọng không hợp lệ '{severity}', phải là một trong: {', '.join(valid_severities)}"
             )
         
         # 验证漏洞类型
@@ -216,7 +216,7 @@ class CreateVulnerabilityReportTool(AgentTool):
         return ToolResult(
             success=True,
             data={
-                "message": f"漏洞报告已创建: {severity_emoji} [{severity.upper()}] {title}",
+                "message": f"Đã tạo báo cáo lỗ hổng: {severity_emoji} [{severity.upper()}] {title}",
                 "report_id": report_id,
                 "severity": severity,
             },
@@ -226,13 +226,13 @@ class CreateVulnerabilityReportTool(AgentTool):
     def _get_default_recommendation(self, vuln_type: str) -> str:
         """获取默认修复建议"""
         recommendations = {
-            "sql_injection": "使用参数化查询或ORM，避免字符串拼接构造SQL语句",
-            "xss": "对用户输入进行HTML实体编码，使用CSP策略，避免innerHTML",
-            "ssrf": "验证和限制目标URL，使用白名单，禁止访问内网地址",
-            "command_injection": "避免使用shell执行，使用参数列表传递命令，严格验证输入",
-            "path_traversal": "规范化路径后验证，使用白名单，限制访问目录",
-            "idor": "实现细粒度访问控制，验证资源所有权，使用UUID替代自增ID",
-            "auth_bypass": "加强认证逻辑，实现多因素认证，定期审计认证代码",
+            "sql_injection": "Sử dụng truy vấn tham số hóa hoặc ORM, tránh nối chuỗi để tạo câu lệnh SQL",
+            "xss": "Mã hóa HTML entity cho dữ liệu người dùng, áp dụng CSP và tránh dùng innerHTML",
+            "ssrf": "Xác minh và giới hạn URL đích, dùng allowlist và chặn truy cập địa chỉ mạng nội bộ",
+            "command_injection": "Tránh thực thi qua shell, truyền lệnh bằng danh sách tham số và kiểm tra chặt dữ liệu đầu vào",
+            "path_traversal": "Chuẩn hóa rồi xác minh đường dẫn, dùng allowlist và giới hạn thư mục được truy cập",
+            "idor": "Triển khai kiểm soát truy cập chi tiết, xác minh quyền sở hữu tài nguyên và ưu tiên UUID thay ID tăng dần",
+            "auth_bypass": "Tăng cường logic xác thực, áp dụng MFA và định kỳ rà soát mã xác thực",
             "hardcoded_secret": "使用环境变量或密钥管理服务存储敏感信息",
             "weak_crypto": "使用强加密算法（AES-256, SHA-256+），避免MD5/SHA1",
             "xxe": "禁用外部实体解析，使用安全的XML解析器配置",

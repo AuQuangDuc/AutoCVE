@@ -33,7 +33,7 @@ class EnterPlanModeRuntimeTool(RuntimeTool):
         )
         self._session_store.replace_runtime_state(context.session_id, runtime_state)
         return ToolExecutionPayload(
-            content="计划模式已启用",
+            content="Chế độ lập kế hoạch đã bật",
             output_payload={"plan_mode": plan_state},
             metadata={"interaction": "plan_mode_enter"},
         )
@@ -61,7 +61,7 @@ class ExitPlanModeRuntimeTool(RuntimeTool):
         )
         self._session_store.replace_runtime_state(context.session_id, runtime_state)
         return ToolExecutionPayload(
-            content="计划模式已关闭",
+            content="Chế độ lập kế hoạch đã tắt",
             output_payload={"plan_mode": plan_state},
             metadata={"interaction": "plan_mode_exit"},
         )

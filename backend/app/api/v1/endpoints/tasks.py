@@ -126,11 +126,11 @@ async def read_task(
     )
     task = result.scalars().first()
     if not task:
-        raise HTTPException(status_code=404, detail="任务不存在")
+        raise HTTPException(status_code=404, detail="Nhiệm vụ không tồn tại")
     
     # 检查权限：只有任务创建者可以查看
     if task.created_by != current_user.id:
-        raise HTTPException(status_code=403, detail="无权查看此任务")
+        raise HTTPException(status_code=403, detail="Không có quyền xem nhiệm vụ này")
     
     return task
 
@@ -147,14 +147,14 @@ async def cancel_task(
     result = await db.execute(select(AuditTask).where(AuditTask.id == id))
     task = result.scalars().first()
     if not task:
-        raise HTTPException(status_code=404, detail="任务不存在")
+        raise HTTPException(status_code=404, detail="Nhiệm vụ không tồn tại")
     
     # 检查权限：只有任务创建者可以取消
     if task.created_by != current_user.id:
-        raise HTTPException(status_code=403, detail="无权取消此任务")
+        raise HTTPException(status_code=403, detail="Không có quyền hủy nhiệm vụ này")
     
     if task.status not in ["pending", "running"]:
-        raise HTTPException(status_code=400, detail="只能取消待处理或运行中的任务")
+        raise HTTPException(status_code=400, detail="Chỉ có thể hủy nhiệm vụ đang chờ hoặc đang chạy")
     
     # 标记任务为取消
     task_control.cancel_task(id)
@@ -164,7 +164,7 @@ async def cancel_task(
     task.completed_at = datetime.now(timezone.utc)
     await db.commit()
     
-    return {"message": "任务已取消", "task_id": id}
+    return {"message": "Nhiệm vụ đã bị hủy", "task_id": id}
 
 
 @router.get("/{id}/issues", response_model=List[AuditIssueSchema])
@@ -182,11 +182,11 @@ async def read_task_issues(
     )
     task = task_result.scalars().first()
     if not task:
-        raise HTTPException(status_code=404, detail="任务不存在")
+        raise HTTPException(status_code=404, detail="Nhiệm vụ không tồn tại")
     
     # 检查权限：只有任务创建者可以查看问题
     if task.created_by != current_user.id:
-        raise HTTPException(status_code=403, detail="无权查看此任务的问题")
+        raise HTTPException(status_code=403, detail="Không có quyền xem các vấn đề của nhiệm vụ này")
     
     result = await db.execute(
         select(AuditIssue)
@@ -217,7 +217,7 @@ async def update_issue(
     )
     issue = result.scalars().first()
     if not issue:
-        raise HTTPException(status_code=404, detail="问题不存在")
+        raise HTTPException(status_code=404, detail="Vấn đề không tồn tại")
     
     if issue_update.status:
         issue.status = issue_update.status
@@ -250,11 +250,11 @@ async def export_task_report_pdf(
     )
     task = result.scalars().first()
     if not task:
-        raise HTTPException(status_code=404, detail="任务不存在")
+        raise HTTPException(status_code=404, detail="Nhiệm vụ không tồn tại")
     
     # 检查权限
     if task.created_by != current_user.id:
-        raise HTTPException(status_code=403, detail="无权导出此任务报告")
+        raise HTTPException(status_code=403, detail="Không có quyền xuất báo cáo của nhiệm vụ này")
     
     # 获取问题列表
     issues_result = await db.execute(

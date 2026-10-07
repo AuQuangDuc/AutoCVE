@@ -80,32 +80,32 @@ async def run_checkmarx_scan_job(
             return
 
         try:
-            await _update_job(db, job, status="running", step="正在认证 Checkmarx", progress=8, started=True)
+            await _update_job(db, job, status="running", step="Đang xác thực Checkmarx", progress=8, started=True)
             client = CheckmarxClient(build_client_config(base_url=base_url, username=username, password=password))
             token = await client.authenticate()
 
-            await _update_job(db, job, step="正在解析 Checkmarx 项目", progress=18)
+            await _update_job(db, job, step="Đang xác định dự án Checkmarx", progress=18)
             project_id = await client.get_project_id(token, job.project_name)
             job.checkmarx_project_id = project_id
             await db.commit()
             await db.refresh(job)
 
-            await _update_job(db, job, step="正在上传 ZIP 并启动扫描", progress=32)
+            await _update_job(db, job, step="Đang tải ZIP lên và khởi chạy quét", progress=32)
             scan_id = await client.submit_scan(token, project_id, source_zip_path)
             job.scan_id = scan_id
             await db.commit()
             await db.refresh(job)
 
-            await _update_job(db, job, step="正在等待 Checkmarx 扫描完成", progress=48)
+            await _update_job(db, job, step="Đang chờ Checkmarx quét xong", progress=48)
             totals, rows = await client.wait_for_results(token, scan_id)
             job.totals_json = json.dumps(totals, ensure_ascii=False)
             await db.commit()
             await db.refresh(job)
 
-            await _update_job(db, job, step="正在调用 AI 降误报工作流", progress=68)
+            await _update_job(db, job, step="Đang chạy workflow AI giảm false positive", progress=68)
             await _store_results_with_workflow(db, job, rows)
 
-            await _update_job(db, job, status="completed", step="扫描完成", progress=100, completed=True)
+            await _update_job(db, job, status="completed", step="Quét hoàn tất", progress=100, completed=True)
         except Exception as exc:
             await db.rollback()
             await db.refresh(job)
@@ -113,7 +113,7 @@ async def run_checkmarx_scan_job(
                 db,
                 job,
                 status="failed",
-                step="扫描失败",
+                step="Quét thất bại",
                 progress=job.progress or 0,
                 error=str(exc),
                 completed=True,
@@ -170,7 +170,7 @@ async def _store_results_with_workflow(
         )
 
         job.progress = 68 + int(27 * index / total)
-        job.current_step = f"正在调用 AI 工作流 ({index}/{len(rows)})"
+        job.current_step = f"Đang chạy workflow AI ({index}/{len(rows)})"
         await db.commit()
 
     if not rows:

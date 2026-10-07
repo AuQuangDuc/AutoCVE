@@ -91,12 +91,12 @@ async def generate_ssh_key(
         return {
             "public_key": public_key,
             "fingerprint": fingerprint,
-            "message": "SSH密钥生成成功，请将公钥添加到您的GitHub/GitLab账户"
+            "message": "Tạo SSH key thành công. Vui lòng thêm public key vào tài khoản GitHub/GitLab của bạn"
         }
 
     except Exception as e:
         logger.error(f"Failed to generate SSH key for user {current_user.id}: {e}")
-        raise HTTPException(status_code=500, detail="生成SSH密钥失败，请稍后重试")
+        raise HTTPException(status_code=500, detail="Tạo SSH key thất bại, vui lòng thử lại sau")
 
 
 @router.get("/", response_model=SSHKeyResponse)
@@ -134,7 +134,7 @@ async def get_ssh_key(
 
     except Exception as e:
         logger.error(f"Failed to get SSH key for user {current_user.id}: {e}")
-        raise HTTPException(status_code=500, detail="获取SSH密钥失败，请稍后重试")
+        raise HTTPException(status_code=500, detail="Lấy SSH key thất bại, vui lòng thử lại sau")
 
 
 @router.delete("/")
@@ -153,7 +153,7 @@ async def delete_ssh_key(
         user_config = result.scalar_one_or_none()
 
         if not user_config or not user_config.other_config:
-            raise HTTPException(status_code=404, detail="未找到SSH密钥")
+            raise HTTPException(status_code=404, detail="Không tìm thấy SSH key")
 
         # 解析配置
         other_config = json.loads(user_config.other_config)
@@ -168,13 +168,13 @@ async def delete_ssh_key(
         user_config.other_config = json.dumps(other_config)
         await db.commit()
 
-        return {"message": "SSH密钥已删除"}
+        return {"message": "Đã xóa SSH key"}
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Failed to delete SSH key for user {current_user.id}: {e}")
-        raise HTTPException(status_code=500, detail="删除SSH密钥失败，请稍后重试")
+        raise HTTPException(status_code=500, detail="Xóa SSH key thất bại, vui lòng thử lại sau")
 
 
 @router.post("/test", response_model=SSHKeyTestResponse)
@@ -198,13 +198,13 @@ async def test_ssh_key(
         user_config = result.scalar_one_or_none()
 
         if not user_config or not user_config.other_config:
-            raise HTTPException(status_code=404, detail="未找到SSH密钥，请先生成SSH密钥")
+            raise HTTPException(status_code=404, detail="Không tìm thấy SSH key, vui lòng tạo SSH key trước")
 
         # 解析配置
         other_config = json.loads(user_config.other_config)
 
         if 'sshPrivateKey' not in other_config:
-            raise HTTPException(status_code=404, detail="未找到SSH密钥，请先生成SSH密钥")
+            raise HTTPException(status_code=404, detail="Không tìm thấy SSH key, vui lòng tạo SSH key trước")
 
         # 解密私钥
         private_key = decrypt_sensitive_data(other_config['sshPrivateKey'])
@@ -217,8 +217,8 @@ async def test_ssh_key(
         if not is_valid:
             return {
                 "success": False,
-                "message": "密钥对验证失败：私钥和公钥不匹配",
-                "output": "请重新生成SSH密钥"
+                "message": "Xác minh cặp khóa thất bại: private key và public key không khớp",
+                "output": "Vui lòng tạo lại SSH key"
             }
 
         # 测试SSH连接
@@ -230,7 +230,7 @@ async def test_ssh_key(
         raise
     except Exception as e:
         logger.error(f"Failed to test SSH key for user {current_user.id}: {e}")
-        raise HTTPException(status_code=500, detail="测试SSH密钥失败，请稍后重试")
+        raise HTTPException(status_code=500, detail="Kiểm tra SSH key thất bại, vui lòng thử lại sau")
 
 
 @router.delete("/known-hosts")
@@ -249,13 +249,13 @@ async def clear_known_hosts_file(
         if success:
             return {
                 "success": True,
-                "message": "known_hosts文件已清理，下次连接时会重新保存主机密钥"
+                "message": "Đã xóa tệp known_hosts; khóa máy chủ sẽ được lưu lại ở lần kết nối tiếp theo"
             }
         else:
-            raise HTTPException(status_code=500, detail="清理known_hosts文件失败")
+            raise HTTPException(status_code=500, detail="Xóa tệp known_hosts thất bại")
 
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Failed to clear known_hosts for user {current_user.id}: {e}")
-        raise HTTPException(status_code=500, detail="清理失败，请稍后重试")
+        raise HTTPException(status_code=500, detail="Dọn dẹp thất bại, vui lòng thử lại sau")

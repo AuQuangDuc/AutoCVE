@@ -39,15 +39,15 @@ INTERNAL_TOOL_NAMES = {"think", "reflect", "load_skill_body", "skill_resource_lo
 AUTO_FINALIZER_PROMPTS_ENABLED = True
 RESUME_TERMINAL_ACTION_NUDGE_LIMIT = 5
 RUNTIME_FINALIZATION_PROMPT = (
-    "你正在处理 Finding 阶段的最终提交恢复流程。\n\n"
-    "不要因为当前已经存在一个完整漏洞就直接结束。FinalizeFinding 是终点工具，调用成功后审计会立即停止。\n\n"
-    "如果审计尚未充分覆盖主要攻击面，或者仍存在需要继续验证的高价值候选，请不要调用 FinalizeFinding；"
-    "应继续调用 Read/Grep/Glob/PowerShell/Skill 等工具补齐证据。\n\n"
-    "只有在审计已经完成且以下条件满足时才调用 FinalizeFinding：\n"
-    "1. 已经完成主要攻击面覆盖；\n"
-    "2. 所有放入 findings 的漏洞都具备完整 source→sink 利用链、PoC、impact、cve_justification 和 verification_notes；\n"
-    "3. 如果 findings 数量较少，summary 明确说明已覆盖范围、被排除候选和没有更多可报告漏洞的原因。\n\n"
-    "不要输出 Markdown，不要自然语言宣布完成。继续审计就调用工具；确实完成才调用 FinalizeFinding。"
+    "Bạn đang xử lý luồng khôi phục để hoàn tất giai đoạn Finding.\n\n"
+    "Không kết thúc chỉ vì hiện đã có một lỗ hổng hoàn chỉnh. FinalizeFinding là công cụ kết thúc; khi gọi thành công, quá trình kiểm tra sẽ dừng ngay.\n\n"
+    "Nếu chưa bao phủ đầy đủ các bề mặt tấn công chính hoặc vẫn còn ứng viên giá trị cao cần xác minh, không gọi FinalizeFinding; "
+    "hãy tiếp tục dùng Read/Grep/Glob/PowerShell/Skill để bổ sung bằng chứng.\n\n"
+    "Chỉ gọi FinalizeFinding khi audit đã hoàn tất và đáp ứng các điều kiện sau:\n"
+    "1. Đã bao phủ các bề mặt tấn công chính;\n"
+    "2. Mọi lỗ hổng trong findings đều có chuỗi source→sink hoàn chỉnh, PoC, impact, cve_justification và verification_notes;\n"
+    "3. Nếu số findings ít, summary phải nêu rõ phạm vi đã kiểm tra, các ứng viên đã loại và lý do không còn lỗ hổng đủ điều kiện báo cáo.\n\n"
+    "Không xuất Markdown và không tuyên bố hoàn tất chỉ bằng ngôn ngữ tự nhiên. Còn kiểm tra thì gọi công cụ; thực sự hoàn tất mới gọi FinalizeFinding."
 )
 FINALIZER_ELIGIBLE_STOP_REASONS = {
     RuntimeStopReason.COMPLETED,
@@ -55,14 +55,14 @@ FINALIZER_ELIGIBLE_STOP_REASONS = {
     RuntimeStopReason.HOOK_STOPPED,
 }
 NATIVE_TOOL_CALLING_REMINDER = (
-    "工具调用协议：\n"
-    "当存在可用工具时，继续审计不能只用自然语言表达计划。凡是你说“继续、检查、查看、读取、搜索、追踪、"
-    "验证、确认、补齐证据、分析调用链”等意思，必须在同一条 assistant 响应中实际发起原生结构化工具调用。\n\n"
-    "如果还需要证据：直接调用 Read/Grep/Glob/Skill/PowerShell 等合适工具继续审计。如果还没有充分覆盖主要攻击面，也必须继续调用工具。\n"
-    "如果审计已经充分完成：调用 FinalizeFinding 提交结构化结果；或输出可解析的 {\"findings\": [...], \"summary\": \"...\"} JSON。\n"
-    "注意：发现第一个完整漏洞不等于审计完成。FinalizeFinding 调用成功后会终止 Finding 阶段，因此不要把它当作阶段性保存工具。\n"
-    "禁止只回复“我将继续/让我继续/下一步我会...”而不调用工具。这样的响应会被视为未完成。\n"
-    "不要输出伪工具语法，例如 Tool Call:、Action:、JSON 形式的伪调用；只能使用模型提供方原生 tool_call。"
+    "Giao thức gọi công cụ:\n"
+    "Khi có công cụ khả dụng, không được chỉ mô tả kế hoạch bằng ngôn ngữ tự nhiên. Nếu phản hồi thể hiện ý định tiếp tục kiểm tra, đọc, tìm kiếm, truy vết, "
+    "xác minh, bổ sung bằng chứng hoặc phân tích call chain, phải thực sự phát native structured tool call trong cùng phản hồi assistant.\n\n"
+    "Nếu còn cần bằng chứng: gọi trực tiếp Read/Grep/Glob/Skill/PowerShell hoặc công cụ phù hợp. Nếu chưa bao phủ đủ các bề mặt tấn công chính, cũng phải tiếp tục gọi công cụ.\n"
+    "Nếu audit đã hoàn tất đầy đủ: gọi FinalizeFinding để gửi kết quả có cấu trúc; hoặc xuất JSON có thể parse dạng {\"findings\": [...], \"summary\": \"...\"}.\n"
+    "Lưu ý: phát hiện lỗ hổng hoàn chỉnh đầu tiên không đồng nghĩa audit đã xong. FinalizeFinding thành công sẽ kết thúc Finding, vì vậy không dùng nó như công cụ lưu tạm.\n"
+    "Không chỉ trả lời rằng sẽ tiếp tục mà không gọi công cụ; phản hồi như vậy được xem là chưa hoàn tất.\n"
+    "Không xuất cú pháp giả gọi công cụ như Tool Call:, Action: hoặc pseudo-call dạng JSON; chỉ dùng native tool_call của nhà cung cấp mô hình."
 )
 
 
@@ -390,9 +390,9 @@ class RuntimeLLMModelClient:
     def _format_tool_history(*, tool_name: str, tool_input: dict[str, Any]) -> str:
         serialized_input = json.dumps(tool_input, ensure_ascii=False)
         return (
-            f"先前工具请求历史（{tool_name}）：\n"
+            f"Lịch sử yêu cầu công cụ trước đó ({tool_name}):\n"
             f"{serialized_input}\n"
-            "这是更早轮次的上下文，不要把它当作当前 assistant 回复。"
+            "Đây là ngữ cảnh từ lượt trước, không xem nó là phản hồi assistant hiện tại."
         )
 
     @staticmethod
@@ -422,9 +422,9 @@ class RuntimeLLMModelClient:
         if error_message:
             summary["error_message"] = error_message
 
-        prefix = "工具执行失败" if is_error else "工具执行结果"
+        prefix = "Thực thi công cụ thất bại" if is_error else "Kết quả thực thi công cụ"
         guidance = (
-            "\n请根据上面的错误信息修正这次工具调用；如果还需要继续审计，请直接发起下一次原生工具调用。"
+            "\nHãy sửa lần gọi công cụ dựa trên lỗi ở trên; nếu vẫn cần tiếp tục kiểm tra, hãy phát native tool call tiếp theo ngay."
             if is_error
             else ""
         )
@@ -714,9 +714,9 @@ class FindingRuntimeBridge:
                 role=RuntimeMessageRole.USER,
                 name="runtime_resume",
                 content=(
-                    "这是一次从上一个完整审计边界恢复的任务。请基于已有审计记录继续检查尚未完成的高价值候选，"
-                    "不要把之前的中断或自然语言总结当作完成。只有确实完成审计后，才调用 FinalizeFinding 提交结构化结果；"
-                    "若仍需证据，请继续调用工具。"
+                    "Đây là tác vụ khôi phục từ ranh giới audit hoàn chỉnh gần nhất. Hãy dựa trên lịch sử hiện có để tiếp tục kiểm tra các ứng viên giá trị cao chưa hoàn tất. "
+                    "Không xem lần gián đoạn hoặc bản tóm tắt tự nhiên trước đó là trạng thái hoàn thành. Chỉ gọi FinalizeFinding để gửi kết quả có cấu trúc khi audit thực sự hoàn tất; "
+                    "nếu vẫn cần bằng chứng, hãy tiếp tục gọi công cụ."
                 ),
                 metadata={"kind": "runtime_resume_instruction"},
             ),
@@ -989,7 +989,7 @@ class FindingRuntimeBridge:
             return []
         return [
             RUNTIME_FINALIZATION_PROMPT
-            + "\n如果仍需继续查看文件、验证调用链、补齐 source/sink/PoC/影响面，请继续调用工具，不要结束。"
+            + "\nNếu vẫn cần đọc file, xác minh call chain hoặc bổ sung source/sink/PoC/impact, hãy tiếp tục gọi công cụ và không kết thúc."
         ]
 
     @classmethod
@@ -1166,13 +1166,13 @@ class FindingRuntimeBridge:
         prefix = ""
         if recovered_findings:
             prefix = (
-                f"Finding runtime 未产出结构化最终结果。以下 {len(recovered_findings)} 条内容只是从 transcript 恢复的候选线索，不是最终漏洞结论。"
+                f"Finding runtime chưa tạo kết quả cuối có cấu trúc. {len(recovered_findings)} mục dưới đây chỉ là ứng viên khôi phục từ transcript, không phải kết luận lỗ hổng cuối."
             )
         if last_assistant:
             return (
                 prefix
-                + "最后一条 assistant 回复："
+                + "Phản hồi assistant cuối cùng: "
                 + last_assistant[:1200]
             )
-        return prefix or "Finding runtime 未产出结构化最终结果。"
+        return prefix or "Finding runtime chưa tạo kết quả cuối có cấu trúc."
 

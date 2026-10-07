@@ -67,7 +67,7 @@ async def _refresh_task_and_batch(db, *, session: AuditSession, final_payload: d
         findings = await _load_task_findings(db, task.id)
         _apply_task_finding_metrics(task, findings)
         task.status = AgentTaskStatus.COMPLETED
-        task.current_step = "审计续跑已完成"
+        task.current_step = "Tiếp tục kiểm tra đã hoàn tất"
         task.error_message = None
         task.completed_at = datetime.now(timezone.utc)
     elif session.state != "completed":
@@ -83,7 +83,7 @@ async def _refresh_task_and_batch(db, *, session: AuditSession, final_payload: d
             task.error_message = str(
                 checkpoint_payload.get("error")
                 or checkpoint_payload.get("message")
-                or "审计续跑未完成，可稍后继续"
+                or "Lượt tiếp tục kiểm tra chưa hoàn tất, có thể tiếp tục lại sau"
             )
         task.completed_at = datetime.now(timezone.utc)
 
@@ -125,8 +125,8 @@ async def _refresh_task_and_batch(db, *, session: AuditSession, final_payload: d
             error_message = str(checkpoint_payload.get("error") or task.error_message or "").strip()
             if is_fatal_one_click_cve_error(error_kind, error_message):
                 batch.status = OneClickCveBatchStatus.FAILED
-                batch.error_message = error_message or "共享模型或基础设施故障"
-                batch.current_step = "检测到共享模型或基础设施故障，已停止整个一键 CVE"
+                batch.error_message = error_message or "Lỗi mô hình dùng chung hoặc hạ tầng"
+                batch.current_step = "Phát hiện lỗi mô hình dùng chung hoặc hạ tầng, đã dừng toàn bộ One-click CVE"
                 batch.completed_at = datetime.now(timezone.utc)
 
 
@@ -399,7 +399,7 @@ async def run_audit_session_resume_job(session_id: str, resume_token: str) -> No
                 session_id,
                 resume_token,
                 error_kind="agent_timeout",
-                message=f"Agent 总时间超时：本次继续审计超过 {settings.AUDIT_SESSION_RESUME_TIMEOUT_SECONDS // 60} 分钟。",
+                message=f"Agent đã hết tổng thời gian: lượt tiếp tục kiểm tra vượt quá {settings.AUDIT_SESSION_RESUME_TIMEOUT_SECONDS // 60} phút.",
             )
             return
         except Exception as exc:
@@ -408,7 +408,7 @@ async def run_audit_session_resume_job(session_id: str, resume_token: str) -> No
                 session_id,
                 resume_token,
                 error_kind=error_kind,
-                message=f"继续审计后台任务失败：{exc}",
+                message=f"Tác vụ nền tiếp tục kiểm tra thất bại: {exc}",
             )
             return
 
@@ -437,7 +437,7 @@ async def run_audit_session_resume_job(session_id: str, resume_token: str) -> No
                 session_id,
                 resume_token,
                 error_kind="incomplete_runtime",
-                message="Finding 未完成：恢复审计没有调用 FinalizeFinding 提交结构化结果。可继续同一审计会话。",
+                message="Finding chưa hoàn tất: lượt khôi phục kiểm tra không gọi FinalizeFinding để gửi kết quả có cấu trúc. Có thể tiếp tục cùng phiên kiểm tra.",
             )
             return
         await _refresh_task_and_batch(db, session=session, final_payload=final_payload)

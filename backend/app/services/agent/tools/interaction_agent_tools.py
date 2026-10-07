@@ -180,7 +180,7 @@ class EnterPlanModeTool(AgentTool):
         })
         runtime_state.metadata["plan_mode"] = dict(plan_state)
         _sync_runtime_state(agent, runtime_state)
-        return ToolResult(success=True, data="计划模式已启用", metadata={"plan_mode": dict(plan_state), "interaction": "plan_mode_enter"})
+        return ToolResult(success=True, data="Chế độ lập kế hoạch đã bật", metadata={"plan_mode": dict(plan_state), "interaction": "plan_mode_enter"})
 
 
 class ExitPlanModeTool(AgentTool):
@@ -211,4 +211,4 @@ class ExitPlanModeTool(AgentTool):
         })
         runtime_state.metadata["plan_mode"] = dict(plan_state)
         _sync_runtime_state(agent, runtime_state)
-        return ToolResult(success=True, data="计划模式已关闭", metadata={"plan_mode": dict(plan_state), "interaction": "plan_mode_exit"})
+        return ToolResult(success=True, data="Chế độ lập kế hoạch đã tắt", metadata={"plan_mode": dict(plan_state), "interaction": "plan_mode_exit"})

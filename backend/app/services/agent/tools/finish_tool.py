@@ -93,7 +93,7 @@ class FinishScanTool(AgentTool):
         
         # 验证内容
         if not content or not content.strip():
-            return ToolResult(success=False, error="报告内容不能为空")
+            return ToolResult(success=False, error="Nội dung báo cáo không được để trống")
         
         # 检查是否有活跃的子Agent
         active_check = self._check_active_agents()
@@ -140,7 +140,7 @@ class FinishScanTool(AgentTool):
             success=True,
             data={
                 "scan_completed": True,
-                "message": "扫描已成功完成" if success else "扫描完成但有错误",
+                "message": "Quét đã hoàn tất thành công" if success else "Quét đã hoàn tất nhưng có lỗi",
                 "report_length": len(content),
                 "total_findings": len(all_findings),
                 "agent_statistics": stats,
@@ -156,7 +156,7 @@ class FinishScanTool(AgentTool):
         if parent_id is not None:
             return ToolResult(
                 success=False,
-                error="此工具只能由根Agent使用。子Agent请使用 agent_finish 工具。"
+                error="Công cụ này chỉ dành cho Agent gốc. Sub-agent hãy sử dụng công cụ agent_finish."
             )
         
         # 检查是否为注册的根Agent
@@ -164,7 +164,7 @@ class FinishScanTool(AgentTool):
         if root_id and root_id != self.agent_id:
             return ToolResult(
                 success=False,
-                error=f"当前Agent不是根Agent。根Agent ID: {root_id}"
+                error=f"Agent hiện tại không phải Agent gốc. ID Agent gốc: {root_id}"
             )
         
         return None

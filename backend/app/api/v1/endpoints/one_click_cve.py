@@ -30,8 +30,8 @@ from app.services.one_click_cve.task_queue import (
 
 router = APIRouter()
 
-ONE_CLICK_CVE_MODEL_PREFLIGHT_STEP = "\u6b63\u5728\u6d4b\u8bd5\u6a21\u578b\u8fde\u901a\u6027"
-ONE_CLICK_CVE_QUEUED_STEP = "\u7b49\u5f85\u4e00\u952e CVE worker \u6267\u884c"
+ONE_CLICK_CVE_MODEL_PREFLIGHT_STEP = "Đang kiểm tra kết nối mô hình"
+ONE_CLICK_CVE_QUEUED_STEP = "Đang chờ One-click CVE worker thực thi"
 ACTIVE_ONE_CLICK_CVE_AGENT_TASK_STATUSES = {
     AgentTaskStatus.PENDING,
     AgentTaskStatus.INITIALIZING,
@@ -272,7 +272,7 @@ async def cancel_one_click_cve_batch(
     cancelled_task_ids = await _cancel_active_batch_agent_tasks(db, batch.id)
     batch.status = OneClickCveBatchStatus.CANCELLED
     batch.completed_at = datetime.now(timezone.utc)
-    batch.current_step = "用户已取消"
+    batch.current_step = "Người dùng đã hủy"
     await db.commit()
     await _wait_for_manual_cancel_checkpoints(db, cancelled_task_ids)
     await db.refresh(batch)
@@ -325,7 +325,7 @@ async def resume_one_click_cve_project(
     except HTTPException as exc:
         if exc.status_code == 503:
             project.status = OneClickCveProjectStatus.FAILED
-            project.error_message = "继续审计队列不可用，已停止整个一键 CVE"
+            project.error_message = "Hàng đợi tiếp tục kiểm tra không khả dụng; đã dừng toàn bộ One-click CVE"
             project.updated_at_local = datetime.now(timezone.utc)
             batch.status = OneClickCveBatchStatus.FAILED
             batch.error_message = project.error_message

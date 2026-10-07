@@ -662,11 +662,11 @@ async def read_project(
     )
     project = result.scalars().first()
     if not project:
-        raise HTTPException(status_code=404, detail="项目不存在")
+        raise HTTPException(status_code=404, detail="Dự án không tồn tại")
     
     # 检查权限：只有项目所有者可以查看
     if project.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="无权查看此项目")
+        raise HTTPException(status_code=403, detail="Không có quyền xem dự án này")
     
     return project
 
@@ -685,11 +685,11 @@ async def update_project(
     result = await db.execute(select(Project).where(Project.id == id))
     project = result.scalars().first()
     if not project:
-        raise HTTPException(status_code=404, detail="项目不存在")
+        raise HTTPException(status_code=404, detail="Dự án không tồn tại")
     
     # 检查权限：只有项目所有者可以更新
     if project.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="无权更新此项目")
+        raise HTTPException(status_code=403, detail="Không có quyền cập nhật dự án này")
     
     update_data = project_in.model_dump(exclude_unset=True)
     target_source_type = update_data.get("source_type", project.source_type)
@@ -745,16 +745,16 @@ async def delete_project(
     result = await db.execute(select(Project).where(Project.id == id))
     project = result.scalars().first()
     if not project:
-        raise HTTPException(status_code=404, detail="项目不存在")
+        raise HTTPException(status_code=404, detail="Dự án không tồn tại")
     
     # 检查权限：只有项目所有者可以删除
     if project.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="无权删除此项目")
+        raise HTTPException(status_code=403, detail="Không có quyền xóa dự án này")
     
     _delete_project_workspace(project.id)
     await db.delete(project)
     await db.commit()
-    return {"message": "项目已永久删除"}
+    return {"message": "Dự án đã bị xóa vĩnh viễn"}
 
 @router.post("/{id}/restore")
 async def restore_project(
@@ -768,16 +768,16 @@ async def restore_project(
     result = await db.execute(select(Project).where(Project.id == id))
     project = result.scalars().first()
     if not project:
-        raise HTTPException(status_code=404, detail="项目不存在")
+        raise HTTPException(status_code=404, detail="Dự án không tồn tại")
     
     # 检查权限：只有项目所有者可以恢复
     if project.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="无权恢复此项目")
+        raise HTTPException(status_code=403, detail="Không có quyền khôi phục dự án này")
     
     project.is_active = True
     project.updated_at = datetime.now(timezone.utc)
     await db.commit()
-    return {"message": "项目已恢复"}
+    return {"message": "Đã khôi phục dự án"}
 
 @router.delete("/{id}/permanent")
 async def permanently_delete_project(
@@ -791,16 +791,16 @@ async def permanently_delete_project(
     result = await db.execute(select(Project).where(Project.id == id))
     project = result.scalars().first()
     if not project:
-        raise HTTPException(status_code=404, detail="项目不存在")
+        raise HTTPException(status_code=404, detail="Dự án không tồn tại")
     
     # 检查权限：只有项目所有者可以永久删除
     if project.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="无权永久删除此项目")
+        raise HTTPException(status_code=403, detail="Không có quyền xóa vĩnh viễn dự án này")
     
     _delete_project_workspace(project.id)
     await db.delete(project)
     await db.commit()
-    return {"message": "项目已永久删除"}
+    return {"message": "Dự án đã bị xóa vĩnh viễn"}
 
 
 @router.get("/{id}/files")
@@ -819,11 +819,11 @@ async def get_project_files(
     """
     project = await db.get(Project, id)
     if not project:
-        raise HTTPException(status_code=404, detail="项目不存在")
+        raise HTTPException(status_code=404, detail="Dự án không tồn tại")
     
     # Check permissions
     if project.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="无权查看此项目")
+        raise HTTPException(status_code=403, detail="Không có quyền xem dự án này")
     
     # 解析排除模式
     parsed_exclude_patterns = []
@@ -869,7 +869,7 @@ async def get_project_files(
                         files.append({"path": name, "size": file_info.file_size})
         except Exception as e:
             print(f"Error reading zip file: {e}")
-            raise HTTPException(status_code=500, detail="无法读取项目文件")
+            raise HTTPException(status_code=500, detail="Không thể đọc tệp dự án")
             
     elif project.source_type == "local_directory":
         if not project.local_path:
@@ -930,7 +930,7 @@ async def get_project_files(
                 if not ssh_private_key:
                     raise HTTPException(
                         status_code=400,
-                        detail="仓库使用SSH URL，但未配置SSH密钥。请先在设置中生成SSH密钥。"
+                        detail="Kho mã sử dụng SSH URL nhưng chưa cấu hình SSH key. Vui lòng tạo SSH key trong phần cài đặt trước."
                     )
 
                 print(f"🔐 使用SSH方式获取文件列表: {project.repository_url}")
@@ -954,12 +954,12 @@ async def get_project_files(
                     repo_files = await get_gitlab_files(project.repository_url, target_branch, gitlab_token, parsed_exclude_patterns)
                     files = [{"path": f["path"], "size": 0} for f in repo_files]
                 else:
-                    raise HTTPException(status_code=400, detail="不支持的仓库类型")
+                    raise HTTPException(status_code=400, detail="Loại kho mã không được hỗ trợ")
         except HTTPException:
             raise
         except Exception as e:
              print(f"Error fetching repo files: {e}")
-             raise HTTPException(status_code=500, detail=f"无法获取仓库文件: {str(e)}")
+             raise HTTPException(status_code=500, detail=f"Không thể lấy tệp từ kho mã: {str(e)}")
 
     return files
 
@@ -977,10 +977,10 @@ async def get_project_file_content(
     """
     project = await db.get(Project, id)
     if not project:
-        raise HTTPException(status_code=404, detail="项目不存在")
+        raise HTTPException(status_code=404, detail="Dự án không tồn tại")
 
     if project.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="无权查看此项目")
+        raise HTTPException(status_code=403, detail="Không có quyền xem dự án này")
 
     relative_path = _ensure_project_relative_path(path)
 
@@ -1039,7 +1039,7 @@ async def get_project_file_content(
         except HTTPException:
             raise
         except Exception as exc:
-            raise HTTPException(status_code=500, detail="无法读取项目文件") from exc
+            raise HTTPException(status_code=500, detail="Không thể đọc tệp dự án") from exc
 
         try:
             content = raw_content.decode("utf-8")
@@ -1104,7 +1104,7 @@ async def get_project_file_content(
         elif repo_type == "gitea":
             repo_files = await get_gitea_files(project.repository_url, target_branch, gitea_token, [])
         else:
-            raise HTTPException(status_code=400, detail="不支持的仓库类型")
+            raise HTTPException(status_code=400, detail="Loại kho mã không được hỗ trợ")
 
         matched_file = next((item for item in repo_files if item.get("path") == relative_path), None)
         if not matched_file:
@@ -1146,7 +1146,7 @@ async def scan_project(
     """
     project = await db.get(Project, id)
     if not project:
-        raise HTTPException(status_code=404, detail="项目不存在")
+        raise HTTPException(status_code=404, detail="Dự án không tồn tại")
 
     # 获取分支和排除模式
     branch_name = scan_request.branch_name if scan_request else None
@@ -1469,11 +1469,11 @@ async def get_project_branches(
     """
     project = await db.get(Project, id)
     if not project:
-        raise HTTPException(status_code=404, detail="项目不存在")
+        raise HTTPException(status_code=404, detail="Dự án không tồn tại")
     
     # 检查是否为仓库类型项目
     if project.source_type != "repository":
-        raise HTTPException(status_code=400, detail="仅仓库类型项目支持获取分支")
+        raise HTTPException(status_code=400, detail="Chỉ dự án dạng kho mã mới hỗ trợ lấy danh sách nhánh")
     
     if project.repository_url:
         repo_type = project.repository_type or "other"
@@ -1502,7 +1502,7 @@ async def get_project_branches(
             }
 
     if not project.repository_url:
-        raise HTTPException(status_code=400, detail="项目未配置仓库地址")
+        raise HTTPException(status_code=400, detail="Dự án chưa cấu hình địa chỉ kho mã")
     
     # 获取用户配置的 Token
     from app.core.config import settings

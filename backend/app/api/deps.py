@@ -27,7 +27,7 @@ async def get_current_user(
     except (JWTError, ValidationError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="无法验证凭据",
+            detail="Không thể xác thực thông tin đăng nhập",
             headers={"WWW-Authenticate": "Bearer"},
         )
     
@@ -35,9 +35,9 @@ async def get_current_user(
     user = result.scalars().first()
     
     if not user:
-        raise HTTPException(status_code=404, detail="用户不存在")
+        raise HTTPException(status_code=404, detail="Người dùng không tồn tại")
     if not user.is_active:
-        raise HTTPException(status_code=400, detail="用户已被禁用")
+        raise HTTPException(status_code=400, detail="Người dùng đã bị vô hiệu hóa")
     return user
 
 async def get_current_active_superuser(
@@ -45,6 +45,6 @@ async def get_current_active_superuser(
 ) -> User:
     if not current_user.is_superuser:
         raise HTTPException(
-            status_code=400, detail="权限不足"
+            status_code=400, detail="Không đủ quyền"
         )
     return current_user

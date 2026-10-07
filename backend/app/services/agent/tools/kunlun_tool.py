@@ -2,7 +2,7 @@
 Kunlun-M 静态代码分析工具集成
 
 Kunlun-M (昆仑镜) 是一款开源的静态代码安全审计工具，
-支持 PHP、JavaScript 等语言的语义分析和漏洞检测。
+Hỗ trợ PHP、JavaScript 等语言的语义分析和漏洞检测。
 
 MIT License
 Copyright (c) 2017 Feei. <feei@feei.cn> All rights reserved
@@ -78,7 +78,7 @@ class KunlunScanInput(BaseModel):
 
 
 class KunlunRuleListInput(BaseModel):
-    """Kunlun-M 规则列表输入"""
+    """Đầu vào danh sách quy tắc Kunlun-M"""
     language: Optional[str] = Field(
         default=None,
         description="按语言过滤规则: php, javascript, solidity, chromeext"
@@ -95,7 +95,7 @@ class KunlunMTool(AgentTool):
     - 函数回溯：支持污点追踪和数据流分析
     - 丰富的规则库：覆盖 OWASP Top 10 等常见漏洞
 
-    支持的漏洞类型：
+    Hỗ trợ的漏洞类型：
     - SQL 注入
     - XSS 跨站脚本
     - 命令注入
@@ -135,7 +135,7 @@ class KunlunMTool(AgentTool):
         return """使用 Kunlun-M (昆仑镜) 进行静态代码安全审计。
 Kunlun-M 是一款专注于代码安全审计的工具，特别擅长 PHP 和 JavaScript 的语义分析。
 
-支持的语言：
+Hỗ trợ的语言：
 - php: PHP 语义分析（最完善）
 - javascript: JavaScript 语义分析
 - solidity: 智能合约基础扫描
@@ -144,8 +144,8 @@ Kunlun-M 是一款专注于代码安全审计的工具，特别擅长 PHP 和 Ja
 主要功能：
 - 深度 AST 语义分析
 - 污点追踪和函数回溯
-- 自定义规则和 tamper 支持
-- 支持识别常见安全漏洞
+- 自定义规则和 tamper Hỗ trợ
+- Hỗ trợ识别常见安全漏洞
 
 使用场景：
 - 对 PHP/JS 代码进行深度安全审计
@@ -251,7 +251,7 @@ Kunlun-M 是一款专注于代码安全审计的工具，特别擅长 PHP 和 Ja
         if not await self._ensure_initialized():
             return ToolResult(
                 success=False,
-                error="Kunlun-M 未正确安装或初始化失败。请确保 Kunlun-M-master 目录存在且依赖已安装。"
+                error="Kunlun-M chưa được cài đặt đúng hoặc khởi tạo thất bại. Hãy đảm bảo thư mục Kunlun-M-master tồn tại và các dependency đã được cài."
             )
 
         # 构建完整目标路径
@@ -263,7 +263,7 @@ Kunlun-M 是一款专注于代码安全审计的工具，特别擅长 PHP 和 Ja
         if not os.path.exists(full_target):
             return ToolResult(
                 success=False,
-                error=f"目标路径不存在: {target_path}"
+                error=f"Đường dẫn đích không tồn tại: {target_path}"
             )
 
         # 构建扫描命令
@@ -280,7 +280,7 @@ Kunlun-M 是一款专注于代码安全审计的工具，特别擅长 PHP 和 Ja
             if language.lower() not in self.SUPPORTED_LANGUAGES:
                 return ToolResult(
                     success=False,
-                    error=f"不支持的语言: {language}。支持: {', '.join(self.SUPPORTED_LANGUAGES)}"
+                    error=f"Ngôn ngữ không được hỗ trợ: {language}。Hỗ trợ: {', '.join(self.SUPPORTED_LANGUAGES)}"
                 )
             cmd.extend(["-l", language.lower()])
 
@@ -335,7 +335,7 @@ Kunlun-M 是一款专注于代码安全审计的工具，特别擅长 PHP 和 Ja
             if not findings:
                 return ToolResult(
                     success=True,
-                    data="🛡️ Kunlun-M 扫描完成，未发现安全问题",
+                    data="🛡️ Kunlun-M quét hoàn tất, không phát hiện vấn đề bảo mật",
                     metadata={
                         "findings_count": 0,
                         "target": target_path,
@@ -360,13 +360,13 @@ Kunlun-M 是一款专注于代码安全审计的工具，特别擅长 PHP 和 Ja
         except asyncio.TimeoutError:
             return ToolResult(
                 success=False,
-                error="Kunlun-M 扫描超时（10分钟）"
+                error="Kunlun-M quét quá thời gian (10 phút)"
             )
         except Exception as e:
             logger.error(f"Kunlun-M scan error: {e}", exc_info=True)
             return ToolResult(
                 success=False,
-                error=f"扫描执行失败: {str(e)}"
+                error=f"Quét thất bại: {str(e)}"
             )
 
     async def _parse_results(
@@ -493,7 +493,7 @@ class KunlunRuleListTool(AgentTool):
     """
     查看 Kunlun-M 可用的扫描规则
 
-    可以按语言过滤规则，了解支持检测的漏洞类型。
+    可以按语言过滤规则，了解Hỗ trợ检测的漏洞类型。
     """
 
     def __init__(self, project_root: str):
@@ -531,7 +531,7 @@ class KunlunRuleListTool(AgentTool):
         if not os.path.exists(self.kunlun_path):
             return ToolResult(
                 success=False,
-                error="Kunlun-M 未安装"
+                error="Kunlun-M chưa được cài đặt"
             )
 
         # 构建命令
@@ -563,25 +563,25 @@ class KunlunRuleListTool(AgentTool):
             if not output.strip():
                 return ToolResult(
                     success=True,
-                    data="未找到匹配的规则" if language else "规则列表为空，请先运行初始化",
+                    data="Không tìm thấy quy tắc phù hợp" if language else "Danh sách quy tắc trống, hãy khởi tạo trước",
                     metadata={"language": language}
                 )
 
             return ToolResult(
                 success=True,
-                data=f"📋 Kunlun-M 规则列表{f' ({language})' if language else ''}:\n\n{output}",
+                data=f"📋 Kunlun-M Danh sách quy tắc{f' ({language})' if language else ''}:\n\n{output}",
                 metadata={"language": language}
             )
 
         except asyncio.TimeoutError:
             return ToolResult(
                 success=False,
-                error="获取规则列表超时"
+                error="Lấy danh sách quy tắc quá thời gian"
             )
         except Exception as e:
             return ToolResult(
                 success=False,
-                error=f"获取规则列表失败: {str(e)}"
+                error=f"Không thể lấy danh sách quy tắc: {str(e)}"
             )
 
 
@@ -624,15 +624,15 @@ class KunlunPluginTool(AgentTool):
 
     @property
     def description(self) -> str:
-        return """运行 Kunlun-M 插件进行专项分析。
+        return """Chạy plugin Kunlun-M để thực hiện phân tích chuyên biệt.
 
-可用插件：
-- php_unserialize_chain_tools: 自动分析 PHP 反序列化链，寻找 POP 链
-- entrance_finder: 发现 PHP 入口点和路由
+Plugin khả dụng:
+- php_unserialize_chain_tools: tự động phân tích chuỗi PHP deserialization để tìm POP chain
+- entrance_finder: phát hiện entry point và route trong mã PHP
 
-使用场景：
-- 分析 PHP 框架的反序列化漏洞利用链
-- 快速定位大型 PHP 项目的入口文件"""
+Trường hợp sử dụng:
+- Phân tích chuỗi khai thác deserialization trong framework PHP
+- Xác định nhanh các tệp entry point của dự án PHP lớn"""
 
     @property
     def args_schema(self):
@@ -650,13 +650,13 @@ class KunlunPluginTool(AgentTool):
         if plugin_name not in self.AVAILABLE_PLUGINS:
             return ToolResult(
                 success=False,
-                error=f"未知插件: {plugin_name}。可用插件: {', '.join(self.AVAILABLE_PLUGINS.keys())}"
+                error=f"Plugin không xác định: {plugin_name}。Plugin khả dụng: {', '.join(self.AVAILABLE_PLUGINS.keys())}"
             )
 
         if not os.path.exists(self.kunlun_path):
             return ToolResult(
                 success=False,
-                error="Kunlun-M 未安装"
+                error="Kunlun-M chưa được cài đặt"
             )
 
         # 构建完整目标路径
@@ -668,7 +668,7 @@ class KunlunPluginTool(AgentTool):
         if not os.path.exists(full_target):
             return ToolResult(
                 success=False,
-                error=f"目标路径不存在: {target_path}"
+                error=f"Đường dẫn đích không tồn tại: {target_path}"
             )
 
         # 构建命令
@@ -701,23 +701,23 @@ class KunlunPluginTool(AgentTool):
             if not output.strip():
                 return ToolResult(
                     success=True,
-                    data=f"插件 {plugin_name} 执行完成，未发现结果",
+                    data=f"Plugin {plugin_name} thực thi hoàn tất, không có kết quả",
                     metadata={"plugin": plugin_name, "target": target_path}
                 )
 
             return ToolResult(
                 success=True,
-                data=f"🔌 Kunlun-M 插件 [{plugin_name}] 分析结果:\n\n{output}",
+                data=f"🔌 Kunlun-M Plugin [{plugin_name}] Kết quả phân tích:\n\n{output}",
                 metadata={"plugin": plugin_name, "target": target_path}
             )
 
         except asyncio.TimeoutError:
             return ToolResult(
                 success=False,
-                error=f"插件 {plugin_name} 执行超时"
+                error=f"Plugin {plugin_name} thực thi quá thời gian"
             )
         except Exception as e:
             return ToolResult(
                 success=False,
-                error=f"插件执行失败: {str(e)}"
+                error=f"Plugin thực thi thất bại: {str(e)}"
             )

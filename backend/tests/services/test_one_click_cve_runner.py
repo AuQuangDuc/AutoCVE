@@ -140,7 +140,7 @@ async def test_audit_candidate_raises_fatal_error_and_synchronizes_all_three_sta
     assert item is not None and item.status == "failed"
     assert task is not None and task.status == AgentTaskStatus.FAILED
     assert session is not None and session.state == "failed"
-    assert "已停止一键 CVE" in (batch.current_step or "")
+    assert "đã dừng One-click CVE" in (batch.current_step or "")
 
 
 @pytest.mark.asyncio
@@ -327,7 +327,7 @@ async def test_audit_candidate_skips_repository_version_already_in_vulnerability
     assert batch_project.agent_task_id is None
     assert batch_project.project_id is None
     assert batch_project.metadata_json["version_label"] == "v3.85.0"
-    assert "已存在相同项目链接和版本" in batch_project.error_message
+    assert "Đã có bản ghi quản lý lỗ hổng cho cùng URL dự án và phiên bản" in batch_project.error_message
     assert task_count_result.scalar_one() == 1
 
 
@@ -603,7 +603,7 @@ async def test_wait_for_task_completion_marks_one_click_timeout_separately(monke
     run_task = asyncio.create_task(asyncio.sleep(5))
 
     async with session_factory() as db:
-        with pytest.raises(one_click_runner.OneClickCveAgentTimeout, match="50分钟"):
+        with pytest.raises(one_click_runner.OneClickCveAgentTimeout, match="50 phút"):
             await one_click_runner._wait_for_task_completion(db, "task-1", run_task)
 
     async with session_factory() as db:
@@ -612,6 +612,6 @@ async def test_wait_for_task_completion_marks_one_click_timeout_separately(monke
     await engine.dispose()
 
     assert task.status == AgentTaskStatus.CANCELLED
-    assert "Agent审计任务超时" in task.error_message
+    assert "Nhiệm vụ Agent Audit đã hết thời gian" in task.error_message
     assert not task.error_message.endswith("；")
     assert "FinalizeFinding" not in task.error_message

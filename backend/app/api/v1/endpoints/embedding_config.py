@@ -37,12 +37,12 @@ class EmbeddingProvider(BaseModel):
 
 class EmbeddingConfig(BaseModel):
     """嵌入模型配置"""
-    provider: str = Field(description="提供商: openai, ollama, azure, cohere, huggingface, jina, qwen")
-    model: str = Field(description="模型名称")
-    api_key: Optional[str] = Field(default=None, description="API Key (如需要)")
-    base_url: Optional[str] = Field(default=None, description="自定义 API 端点")
-    dimensions: Optional[int] = Field(default=None, description="向量维度 (某些模型支持)")
-    batch_size: int = Field(default=100, description="批处理大小")
+    provider: str = Field(description="Nhà cung cấp: openai, ollama, azure, cohere, huggingface, jina, qwen")
+    model: str = Field(description="Tên mô hình")
+    api_key: Optional[str] = Field(default=None, description="API Key (nếu cần)")
+    base_url: Optional[str] = Field(default=None, description="API endpoint tùy chỉnh")
+    dimensions: Optional[int] = Field(default=None, description="Số chiều vector (một số mô hình hỗ trợ)")
+    batch_size: int = Field(default=100, description="Kích thước batch")
 
 
 class EmbeddingConfigResponse(BaseModel):
@@ -62,7 +62,7 @@ class TestEmbeddingRequest(BaseModel):
     api_key: Optional[str] = None
     base_url: Optional[str] = None
     dimension: Optional[int] = None  # 自定义维度（Ollama等场景）
-    test_text: str = "这是一段测试文本，用于验证嵌入模型是否正常工作。"
+    test_text: str = "Đây là văn bản kiểm tra để xác minh mô hình embedding hoạt động bình thường."
 
 
 class TestEmbeddingResponse(BaseModel):
@@ -79,8 +79,8 @@ class TestEmbeddingResponse(BaseModel):
 EMBEDDING_PROVIDERS: List[EmbeddingProvider] = [
     EmbeddingProvider(
         id="openai",
-        name="OpenAI (兼容 DeepSeek/Moonshot/智谱 等)",
-        description="OpenAI 官方或兼容 API，填写自定义端点可接入其他服务商",
+        name="OpenAI (tương thích DeepSeek/Moonshot/Zhipu, v.v.)",
+        description="OpenAI chính thức hoặc API tương thích; nhập endpoint tùy chỉnh để kết nối nhà cung cấp khác",
         models=[
             "text-embedding-3-small",
             "text-embedding-3-large",
@@ -92,7 +92,7 @@ EMBEDDING_PROVIDERS: List[EmbeddingProvider] = [
     EmbeddingProvider(
         id="azure",
         name="Azure OpenAI",
-        description="Azure 托管的 OpenAI 嵌入模型",
+        description="Mô hình embedding OpenAI được Azure lưu trữ",
         models=[
             "text-embedding-3-small",
             "text-embedding-3-large",
@@ -103,8 +103,8 @@ EMBEDDING_PROVIDERS: List[EmbeddingProvider] = [
     ),
     EmbeddingProvider(
         id="ollama",
-        name="Ollama (本地)",
-        description="本地运行的开源嵌入模型 (使用 /api/embed 端点)",
+        name="Ollama (cục bộ)",
+        description="Mô hình embedding mã nguồn mở chạy cục bộ (dùng endpoint /api/embed)",
         models=[
             "nomic-embed-text",
             "mxbai-embed-large",
@@ -146,7 +146,7 @@ EMBEDDING_PROVIDERS: List[EmbeddingProvider] = [
     EmbeddingProvider(
         id="jina",
         name="Jina AI",
-        description="Jina AI 嵌入模型，代码嵌入效果好",
+        description="Mô hình embedding Jina AI, phù hợp embedding mã nguồn",
         models=[
             "jina-embeddings-v2-base-code",
             "jina-embeddings-v2-base-en",
@@ -158,7 +158,7 @@ EMBEDDING_PROVIDERS: List[EmbeddingProvider] = [
     EmbeddingProvider(
         id="qwen",
         name="Qwen (DashScope)",
-        description="阿里云 DashScope Qwen 嵌入模型，兼容 OpenAI embeddings 接口",
+        description="Mô hình embedding DashScope Qwen của Alibaba Cloud, tương thích giao diện OpenAI embeddings",
         models=[
             "text-embedding-v4",
             "text-embedding-v3",
@@ -301,20 +301,20 @@ async def update_config(
     # 验证提供商
     provider_ids = [p.id for p in EMBEDDING_PROVIDERS]
     if config.provider not in provider_ids:
-        raise HTTPException(status_code=400, detail=f"不支持的提供商: {config.provider}")
+        raise HTTPException(status_code=400, detail=f"Nhà cung cấp không được hỗ trợ: {config.provider}")
 
     # 获取提供商信息（用于检查 API Key 要求）
     provider = next((p for p in EMBEDDING_PROVIDERS if p.id == config.provider), None)
-    # 注意：不再强制验证模型名称，允许用户输入自定义模型
+    # 注意：不再强制验证Tên mô hình，允许用户输入自定义模型
 
     # 检查 API Key
     if provider and provider.requires_api_key and not config.api_key:
-        raise HTTPException(status_code=400, detail=f"{config.provider} 需要 API Key")
+        raise HTTPException(status_code=400, detail=f"{config.provider} cần API Key")
 
     # 保存到数据库
     await save_embedding_config_to_db(db, current_user.id, config)
 
-    return {"message": "配置已保存", "provider": config.provider, "model": config.model}
+    return {"message": "Đã lưu cấu hình", "provider": config.provider, "model": config.model}
 
 
 @router.post("/test", response_model=TestEmbeddingResponse)
@@ -349,7 +349,7 @@ async def test_embedding(
         
         return TestEmbeddingResponse(
             success=True,
-            message=f"嵌入成功! 维度: {len(embedding)}",
+            message=f"Embedding thành công! Số chiều: {len(embedding)}",
             dimensions=len(embedding),
             sample_embedding=embedding[:5],  # 返回前 5 维
             latency_ms=latency_ms,
@@ -363,7 +363,7 @@ async def test_embedding(
 
         return TestEmbeddingResponse(
             success=False,
-            message=f"嵌入失败: {str(e)}",
+            message=f"Embedding thất bại: {str(e)}",
         )
 
 
@@ -378,7 +378,7 @@ async def get_provider_models(
     provider_info = next((p for p in EMBEDDING_PROVIDERS if p.id == provider), None)
     
     if not provider_info:
-        raise HTTPException(status_code=404, detail=f"提供商不存在: {provider}")
+        raise HTTPException(status_code=404, detail=f"Nhà cung cấp không tồn tại: {provider}")
     
     return {
         "provider": provider,

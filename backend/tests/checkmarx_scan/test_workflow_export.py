@@ -42,7 +42,7 @@ def test_build_results_workbook_writes_ai_verdict_and_reason():
     with ZipFile(BytesIO(workbook_bytes)) as archive:
         sheet_xml = archive.read("xl/worksheets/sheet1.xml").decode("utf-8")
 
-    for header in ("scan_id", "path_id", "Vulnerability", "Type", "URL", "AI判断", "AI判断原因"):
+    for header in ("scan_id", "path_id", "Vulnerability", "Type", "URL", "AI đánh giá", "Lý do AI đánh giá"):
         assert header in sheet_xml
     assert "<c r=\"F2\" t=\"inlineStr\"><is><t>False</t></is></c>" in sheet_xml
     assert "参数受白名单约束，无法控制 SQL 片段。" in sheet_xml

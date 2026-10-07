@@ -92,7 +92,7 @@ class AgentEventEmitter:
         await self.emit(AgentEventData(
             event_type="phase_start",
             phase=phase,
-            message=message or f"开始 {phase} 阶段",
+            message=message or f"Bắt đầu giai đoạn {phase}",
         ))
     
     async def emit_phase_complete(self, phase: str, message: Optional[str] = None):
@@ -100,7 +100,7 @@ class AgentEventEmitter:
         await self.emit(AgentEventData(
             event_type="phase_complete",
             phase=phase,
-            message=message or f"{phase} 阶段完成",
+            message=message or f"Hoàn thành giai đoạn {phase}",
         ))
     
     async def emit_thinking(self, message: str, metadata: Optional[Dict] = None):
@@ -116,7 +116,7 @@ class AgentEventEmitter:
         display = thought[:500] + "..." if len(thought) > 500 else thought
         await self.emit(AgentEventData(
             event_type="llm_thought",
-            message=f"💭 LLM 思考:\n{display}",
+            message=f"💭 LLM suy luận:\n{display}",
             metadata={"thought": thought, "iteration": iteration},
         ))
     
@@ -124,7 +124,7 @@ class AgentEventEmitter:
         """发射 LLM 决策事件"""
         await self.emit(AgentEventData(
             event_type="llm_decision",
-            message=f"💡 LLM 决策: {decision}" + (f" ({reason})" if reason else ""),
+            message=f"💡 Quyết định của LLM: {decision}" + (f" ({reason})" if reason else ""),
             metadata={"decision": decision, "reason": reason},
         ))
     
@@ -134,7 +134,7 @@ class AgentEventEmitter:
         input_str = json.dumps(action_input, ensure_ascii=False)[:200]
         await self.emit(AgentEventData(
             event_type="llm_action",
-            message=f"⚡ LLM 动作: {action}\n   参数: {input_str}",
+            message=f"⚡ Hành động của LLM: {action}\n   Tham số: {input_str}",
             metadata={"action": action, "action_input": action_input},
         ))
     
@@ -149,7 +149,7 @@ class AgentEventEmitter:
             event_type="tool_call",
             tool_name=tool_name,
             tool_input=tool_input,
-            message=message or f"调用工具: {tool_name}",
+            message=message or f"Gọi công cụ: {tool_name}",
         ))
     
     async def emit_tool_result(
@@ -173,7 +173,7 @@ class AgentEventEmitter:
             tool_name=tool_name,
             tool_output=output_data,
             tool_duration_ms=duration_ms,
-            message=message or f"工具 {tool_name} 执行完成 ({duration_ms}ms)",
+            message=message or f"Công cụ {tool_name} đã thực thi xong ({duration_ms}ms)",
         ))
     
     async def emit_finding(
@@ -189,7 +189,7 @@ class AgentEventEmitter:
         await self.emit(AgentEventData(
             event_type=event_type,
             finding_id=finding_id,
-            message=f"{'✅ 已验证' if is_verified else '🔍 新发现'}: [{severity.upper()}] {title}",
+            message=f"{'✅ Đã xác minh' if is_verified else '🔍 Phát hiện mới'}: [{severity.upper()}] {title}",
             metadata={
                 "id": finding_id,  # 🔥 添加 id 字段供前端使用
                 "title": title,
@@ -233,7 +233,7 @@ class AgentEventEmitter:
         percentage = (current / total * 100) if total > 0 else 0
         await self.emit(AgentEventData(
             event_type="progress",
-            message=message or f"进度: {current}/{total} ({percentage:.1f}%)",
+            message=message or f"Tiến độ: {current}/{total} ({percentage:.1f}%)",
             metadata={
                 "current": current,
                 "total": total,
@@ -250,7 +250,7 @@ class AgentEventEmitter:
         """发射任务完成事件"""
         await self.emit(AgentEventData(
             event_type="task_complete",
-            message=message or f"✅ 审计完成！发现 {findings_count} 个漏洞，耗时 {duration_ms/1000:.1f}秒",
+            message=message or f"✅ Kiểm tra hoàn tất! Phát hiện {findings_count} lỗ hổng, thời gian {duration_ms/1000:.1f} giây",
             metadata={
                 "findings_count": findings_count,
                 "duration_ms": duration_ms,
@@ -261,7 +261,7 @@ class AgentEventEmitter:
         """发射任务错误事件"""
         await self.emit(AgentEventData(
             event_type="task_error",
-            message=message or f"❌ 任务失败: {error}",
+            message=message or f"❌ Nhiệm vụ thất bại: {error}",
             metadata={"error": error},
         ))
     
@@ -269,7 +269,7 @@ class AgentEventEmitter:
         """发射任务取消事件"""
         await self.emit(AgentEventData(
             event_type="task_cancel",
-            message=message or "⚠️ 任务已取消",
+            message=message or "⚠️ Nhiệm vụ đã bị hủy",
         ))
 
 

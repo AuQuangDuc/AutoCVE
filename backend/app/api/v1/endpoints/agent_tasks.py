@@ -76,7 +76,7 @@ async def _mark_latest_runtime_session_manual_cancelled(db: AsyncSession, task_i
     )
     if batch_project is not None:
         batch_project.status = OneClickCveProjectStatus.CANCELLED
-        batch_project.error_message = "用户已手动终止，可继续审计"
+        batch_project.error_message = "Người dùng đã dừng thủ công; có thể tiếp tục kiểm tra"
         batch_project.updated_at_local = datetime.now(timezone.utc)
 
     session = await db.scalar(
@@ -3659,7 +3659,7 @@ async def get_checkpoint_detail(
 async def generate_audit_report(
     task_id: str,
     format: str = Query("markdown", pattern="^(markdown|json|html)$"),
-    template_id: Optional[str] = Query(None, description="闂佺厧顨庢禍婊堟偩閻愵剛鈻曞璺侯儏琚氶梺鍛婄☉閿曘儴鍟梺?ID"),
+    template_id: Optional[str] = Query(None, description="ID mẫu báo cáo tùy chọn"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(deps.get_current_user),
 ):

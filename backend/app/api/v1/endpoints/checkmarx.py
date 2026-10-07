@@ -124,7 +124,7 @@ async def create_checkmarx_scan(
     job = CheckmarxScanJob(
         created_by=current_user.id,
         status="pending",
-        current_step="等待启动",
+        current_step="Chờ khởi động",
         progress=0,
         project_name=project_name.strip(),
         source_filename=Path(file.filename).name,

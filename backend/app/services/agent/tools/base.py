@@ -131,7 +131,7 @@ class AgentTool(ABC):
             error_msg = str(e)
             result = ToolResult(
                 success=False,
-                data=f"工具执行异常: {error_msg}",  # 🔥 修复：设置 data 字段避免 None
+                data=f"Lỗi khi thực thi công cụ: {error_msg}",  # 🔥 修复：设置 data 字段避免 None
                 error=error_msg,
             )
         

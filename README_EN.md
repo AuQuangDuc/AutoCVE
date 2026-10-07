@@ -23,7 +23,7 @@
 [🏆 CVE Results](#-cve-discovery-results)
 
 <p>
-  <a href="./README.md">简体中文</a> | <strong>English</strong>
+  <a href="./README.md">Tiếng Việt</a> | <strong>English</strong> | <a href="./README_ZH.md">简体中文</a>
 </p>
 
 </div>

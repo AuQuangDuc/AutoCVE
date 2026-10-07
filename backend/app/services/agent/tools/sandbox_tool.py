@@ -206,7 +206,7 @@ class SandboxManager:
                     await asyncio.to_thread(container.kill)
                     return {
                         "success": False,
-                        "error": f"执行超时 ({timeout}秒)",
+                        "error": f"thực thi quá thời gian ({timeout}秒)",
                         "stdout": "",
                         "stderr": "",
                         "exit_code": -1,
@@ -345,7 +345,7 @@ class SandboxManager:
                 await asyncio.to_thread(container.kill)
                 return {
                     "success": False,
-                    "error": f"执行超时 ({timeout}秒)",
+                    "error": f"thực thi quá thời gian ({timeout}秒)",
                     "stdout": "",
                     "stderr": "",
                     "exit_code": -1,
@@ -639,7 +639,7 @@ class SandboxTool(AgentTool):
     在安全隔离的环境中执行代码和命令
     """
 
-    # 允许的命令前缀 - 放宽限制以支持更灵活的测试
+    # 允许的命令前缀 - 放宽限制以Hỗ trợ更灵活的测试
     ALLOWED_COMMANDS = [
         # 编程语言解释器
         "python", "python3", "node", "php", "ruby", "perl",
@@ -702,19 +702,19 @@ class SandboxTool(AgentTool):
         if not self.sandbox_manager.is_available:
             return ToolResult(
                 success=False,
-                error="沙箱环境不可用（Docker 未安装或未运行）",
+                error="Sandbox không khả dụng (Docker chưa cài hoặc chưa chạy)",
             )
         
         # 安全检查：验证命令是否允许
         cmd_parts = command.strip().split()
         if not cmd_parts:
-            return ToolResult(success=False, error="命令不能为空")
+            return ToolResult(success=False, error="Lệnh không được để trống")
         
         base_cmd = cmd_parts[0]
         if not any(base_cmd.startswith(allowed) for allowed in self.ALLOWED_COMMANDS):
             return ToolResult(
                 success=False,
-                error=f"命令 '{base_cmd}' 不在允许列表中。允许的命令: {', '.join(self.ALLOWED_COMMANDS)}",
+                error=f"Lệnh '{base_cmd}' không nằm trong danh sách cho phép. Lệnh được phép: {', '.join(self.ALLOWED_COMMANDS)}",
             )
         
         # 执行命令
@@ -811,7 +811,7 @@ class SandboxHttpTool(AgentTool):
         if not self.sandbox_manager.is_available:
             return ToolResult(
                 success=False,
-                error="沙箱环境不可用 (Docker Unavailable)",
+                error="Sandbox không khả dụng (Docker Unavailable)",
             )
         
         result = await self.sandbox_manager.execute_http_request(
@@ -888,7 +888,7 @@ class VulnerabilityVerifyTool(AgentTool):
 - payload: 攻击载荷
 - expected_pattern: 可选，期望在响应中匹配的模式
 
-支持的漏洞类型:
+Hỗ trợ的漏洞类型:
 - sql_injection: SQL 注入
 - xss: 跨站脚本
 - command_injection: 命令注入
@@ -916,7 +916,7 @@ class VulnerabilityVerifyTool(AgentTool):
         if not self.sandbox_manager.is_available:
             return ToolResult(
                 success=False,
-                error="沙箱环境不可用 (Docker Unavailable)",
+                error="Sandbox không khả dụng (Docker Unavailable)",
             )
         
         result = await self.sandbox_manager.verify_vulnerability(
@@ -967,7 +967,7 @@ class PhpTestInput(BaseModel):
 class PhpTestTool(AgentTool):
     """
     PHP 代码测试工具
-    在沙箱中执行 PHP 代码，支持模拟 GET/POST 参数
+    在沙箱中执行 PHP 代码，Hỗ trợ模拟 GET/POST 参数
     """
 
     def __init__(self, sandbox_manager: Optional[SandboxManager] = None, project_root: str = "."):
@@ -981,7 +981,7 @@ class PhpTestTool(AgentTool):
 
     @property
     def description(self) -> str:
-        return """在沙箱中测试 PHP 代码，支持模拟 GET/POST 参数。
+        return """在沙箱中测试 PHP 代码，Hỗ trợ模拟 GET/POST 参数。
 专门用于验证 PHP 漏洞（如命令注入、SQL 注入等）。
 
 输入 (二选一):
@@ -1023,7 +1023,7 @@ class PhpTestTool(AgentTool):
         if not self.sandbox_manager.is_available:
             return ToolResult(
                 success=False,
-                error="沙箱环境不可用 (Docker Unavailable)",
+                error="Sandbox không khả dụng (Docker Unavailable)",
             )
 
         # 构建 PHP 代码
@@ -1034,7 +1034,7 @@ class PhpTestTool(AgentTool):
             if not os.path.exists(full_path):
                 return ToolResult(
                     success=False,
-                    error=f"文件不存在: {file_path}",
+                    error=f"Tệp không tồn tại: {file_path}",
                 )
             with open(full_path, 'r', encoding='utf-8', errors='ignore') as f:
                 php_code = f.read()
@@ -1042,7 +1042,7 @@ class PhpTestTool(AgentTool):
         if not php_code:
             return ToolResult(
                 success=False,
-                error="必须提供 php_code 或 file_path",
+                error="Phải cung cấp php_code hoặc file_path",
             )
 
         # 构建模拟 $_GET 和 $_POST 的包装代码
@@ -1211,7 +1211,7 @@ class CommandInjectionTestTool(AgentTool):
         if not self.sandbox_manager.is_available:
             return ToolResult(
                 success=False,
-                error="沙箱环境不可用 (Docker Unavailable)",
+                error="Sandbox không khả dụng (Docker Unavailable)",
             )
 
         import os
@@ -1220,7 +1220,7 @@ class CommandInjectionTestTool(AgentTool):
         if not os.path.exists(full_path):
             return ToolResult(
                 success=False,
-                error=f"文件不存在: {target_file}",
+                error=f"Tệp không tồn tại: {target_file}",
             )
 
         # 读取文件内容
@@ -1241,7 +1241,7 @@ class CommandInjectionTestTool(AgentTool):
         else:
             return ToolResult(
                 success=False,
-                error=f"暂不支持语言: {language}",
+                error=f"Chưa hỗ trợ ngôn ngữ: {language}",
             )
 
         output_parts.append(f"\n退出码: {result['exit_code']}")
@@ -1252,7 +1252,7 @@ class CommandInjectionTestTool(AgentTool):
         if result.get("stderr"):
             output_parts.append(f"\n错误输出:\n```\n{result['stderr'][:500]}\n```")
 
-        # 分析结果
+        # Kết quả phân tích
         is_vulnerable = False
         evidence = None
         poc = None

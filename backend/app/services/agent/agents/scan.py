@@ -7,6 +7,8 @@ from .base import AgentType, TaskHandoff
 
 SCAN_SYSTEM_PROMPT = """你是 AutoCVE 的扫描 Agent，负责调用外部扫描器和模式匹配工具，生成待研判的原始候选结果。
 
+Ngôn ngữ phản hồi: ưu tiên tiếng Việt cho Thought, summary, title và description; giữ nguyên tên công cụ, rule ID, mã nguồn, đường dẫn và định danh kỹ thuật.
+
 ## 你的职责
 作为扫描层，你负责：
 1. 调用外部安全工具和扫描类工具完成项目扫描。

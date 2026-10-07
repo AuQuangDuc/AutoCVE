@@ -34,9 +34,9 @@ async def login(
     user = result.scalars().first()
 
     if not user or not security.verify_password(form_data.password, user.hashed_password):
-        raise HTTPException(status_code=400, detail="邮箱或密码错误")
+        raise HTTPException(status_code=400, detail="Email hoặc mật khẩu không đúng")
     if not user.is_active:
-        raise HTTPException(status_code=400, detail="账户已被禁用")
+        raise HTTPException(status_code=400, detail="Tài khoản đã bị vô hiệu hóa")
 
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return {
@@ -55,7 +55,7 @@ async def register(
     result = await db.execute(select(User).where(User.email == user_in.email))
     existing_user = result.scalars().first()
     if existing_user:
-        raise HTTPException(status_code=400, detail="该邮箱已被注册")
+        raise HTTPException(status_code=400, detail="Email này đã được đăng ký")
 
     count_result = await db.execute(select(User))
     all_users = count_result.scalars().all()

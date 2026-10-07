@@ -62,6 +62,8 @@ class QueryLoop:
     ALLOW_LEGACY_TEXT_TOOL_CALLS = False
     MODEL_STREAM_MAX_RETRIES = 5
     _CONTINUE_INTENT_PATTERNS = (
+        re.compile(r"tiếp tục (kiểm tra|đọc|xem|tìm kiếm|phân tích)", re.IGNORECASE),
+        re.compile(r"tôi (cần|sẽ) (đọc|kiểm tra|xem|tìm kiếm|phân tích)", re.IGNORECASE),
         re.compile(r"继续审查"),
         re.compile(r"继续检查"),
         re.compile(r"继续查看"),
@@ -249,7 +251,7 @@ class QueryLoop:
                             "attempt": attempt_number + 1,
                             "max_attempts": self.MODEL_STREAM_MAX_RETRIES + 1,
                             "attempt_id": attempt_id,
-                            "message_text": "模型流中断，正在从上一个完整回合自动重试。",
+                            "message_text": "Luồng mô hình bị gián đoạn, đang tự động thử lại từ lượt hoàn chỉnh gần nhất.",
                             "error_type": error_kind,
                         }
                     )
@@ -300,8 +302,8 @@ class QueryLoop:
                     "type": "error",
                     "error_type": error_kind,
                     "error": str(exc).strip() or repr(exc),
-                    "user_message": "模型流自动重试已耗尽，可稍后继续同一审计。",
-                    "message_text": "模型流自动重试已耗尽，可稍后继续同一审计。",
+                    "user_message": "Đã dùng hết số lần tự động thử lại luồng mô hình. Bạn có thể tiếp tục cùng phiên kiểm tra sau.",
+                    "message_text": "Đã dùng hết số lần tự động thử lại luồng mô hình. Bạn có thể tiếp tục cùng phiên kiểm tra sau.",
                 }
             )
             return self._finalize_terminal_result(
@@ -347,10 +349,10 @@ class QueryLoop:
                 nudge_message = TranscriptItem(
                     role=RuntimeMessageRole.USER,
                     content=(
-                        "你刚刚使用了纯文本工具调用语法（例如 Tool Call:/Action:），这类内容不会被执行。"
-                        "如果还需要继续审计，请改用模型提供方原生的结构化工具调用重新发起同一动作。"
-                        "如果你已经充分完成主要攻击面覆盖，并且准备结束整个 Finding 阶段，请调用 FinalizeFinding 提交最终结构化结果。"
-                        "如果只是已有一个漏洞或仍有高风险方向未检查，请继续调用工具审计，不要提前终止。"
+                        "Bạn vừa dùng cú pháp gọi công cụ dạng văn bản thuần (ví dụ Tool Call:/Action:), nên thao tác đó sẽ không được thực thi. "
+                        "Nếu vẫn cần tiếp tục kiểm tra, hãy gọi lại bằng native structured tool call của nhà cung cấp mô hình. "
+                        "Nếu đã bao phủ đầy đủ các bề mặt tấn công chính và sẵn sàng kết thúc giai đoạn Finding, hãy gọi FinalizeFinding để gửi kết quả có cấu trúc. "
+                        "Nếu mới chỉ có một lỗ hổng hoặc vẫn còn hướng rủi ro cao chưa kiểm tra, hãy tiếp tục dùng công cụ và không kết thúc sớm."
                     ),
                     name="legacy_tool_syntax_nudge",
                     metadata={"synthetic": True, "kind": "legacy_tool_syntax_nudge"},
@@ -718,33 +720,32 @@ class QueryLoop:
                 nudge_message = TranscriptItem(
                     role=RuntimeMessageRole.USER,
                     content=(
-                        "你刚刚表达了还要继续审查的意图，但没有真正执行动作。"
-                        "如果还需要继续收集证据，请直接调用下一次工具；"
-                        "如果你已经充分完成主要攻击面覆盖，并且准备结束整个 Finding 阶段，请调用 FinalizeFinding 提交最终结构化结果。"
-                        "如果只是已有一个漏洞或仍有高风险方向未检查，请继续调用工具审计，不要提前终止。"
-                        "不要只描述下一步计划而不执行。"
+                        "Bạn vừa cho biết muốn tiếp tục kiểm tra nhưng chưa thực sự thực hiện hành động. "
+                        "Nếu vẫn cần thu thập bằng chứng, hãy gọi công cụ tiếp theo ngay; "
+                        "nếu đã bao phủ đầy đủ các bề mặt tấn công chính và sẵn sàng kết thúc Finding, hãy gọi FinalizeFinding để gửi kết quả có cấu trúc. "
+                        "Nếu mới chỉ có một lỗ hổng hoặc vẫn còn hướng rủi ro cao chưa kiểm tra, hãy tiếp tục dùng công cụ và không kết thúc sớm. "
+                        "Không chỉ mô tả kế hoạch bước tiếp theo mà không thực thi."
                     ),
                     name="terminal_action_nudge",
                     metadata={"synthetic": True, "kind": "terminal_action_nudge"},
                 )
                 nudge_message.content = self._terminal_action_nudge_message or (
-                    "你的上一条回复没有发起任何工具调用，也没有提交最终结构化结果，因此 Finding 阶段尚未完成。\n\n"
-                    "下一条 assistant 响应必须满足以下二选一：\n"
-                    "1. 如果还需要继续审计、追踪、读取、搜索、验证、补齐证据，或还没有充分覆盖主要高风险攻击面，必须立即调用 "
-                    "Read/Grep/Glob/Skill/PowerShell 等合适工具。\n"
-                    "2. 如果已经充分完成主要攻击面覆盖，并且准备结束整个 Finding 阶段，必须调用 FinalizeFinding；或输出严格可解析的 "
-                    "{\"findings\": [...], \"summary\": \"...\"} JSON。\n\n"
-                    "发现第一个完整漏洞不等于审计完成；FinalizeFinding 调用成功后会终止 Finding 阶段，不要把它当作阶段性保存工具。\n"
-                    "不要再只用自然语言说明“继续审计”“让我检查”“下一步会做什么”。"
-                    "继续就必须实际调用工具，完成就必须提交结构化终点。"
+                    "Phản hồi trước không gọi công cụ và cũng chưa gửi kết quả cuối có cấu trúc, vì vậy giai đoạn Finding chưa hoàn tất.\n\n"
+                    "Phản hồi assistant tiếp theo phải chọn một trong hai hướng:\n"
+                    "1. Nếu vẫn cần kiểm tra, truy vết, đọc, tìm kiếm, xác minh hoặc bổ sung bằng chứng, hoặc chưa bao phủ đủ các bề mặt tấn công rủi ro cao, phải gọi ngay "
+                    "Read/Grep/Glob/Skill/PowerShell hoặc công cụ phù hợp.\n"
+                    "2. Nếu đã bao phủ đầy đủ các bề mặt tấn công chính và sẵn sàng kết thúc toàn bộ Finding, phải gọi FinalizeFinding; hoặc xuất JSON có thể parse nghiêm ngặt dạng "
+                    "{\"findings\": [...], \"summary\": \"...\"}.\n\n"
+                    "Phát hiện lỗ hổng hoàn chỉnh đầu tiên không đồng nghĩa audit đã xong; FinalizeFinding thành công sẽ kết thúc giai đoạn Finding, không dùng nó như công cụ lưu tạm.\n"
+                    "Không chỉ mô tả bằng ngôn ngữ tự nhiên rằng sẽ tiếp tục hoặc sẽ kiểm tra gì. Muốn tiếp tục thì phải gọi công cụ; muốn hoàn tất thì phải gửi terminal result có cấu trúc."
                 )
                 if empty_model_response:
                     nudge_message.name = "empty_model_response_nudge"
                     nudge_message.content = (
-                        "上一轮模型流正常结束，但没有返回任何正文、reasoning 或原生工具调用。"
-                        "这不是完成，不能停在这里。下一条 assistant 响应必须二选一："
-                        "仍需审计就立即调用 Read/Grep/Glob/Skill/PowerShell 等工具；"
-                        "审计已完成就调用 FinalizeFinding 提交结构化结果。"
+                        "Luồng mô hình ở lượt trước kết thúc bình thường nhưng không trả về nội dung, reasoning hoặc native tool call. "
+                        "Đây chưa phải trạng thái hoàn tất. Phản hồi assistant tiếp theo phải chọn một trong hai: "
+                        "nếu vẫn cần kiểm tra thì gọi ngay Read/Grep/Glob/Skill/PowerShell hoặc công cụ phù hợp; "
+                        "nếu audit đã hoàn tất thì gọi FinalizeFinding để gửi kết quả có cấu trúc."
                     )
                     nudge_message.metadata = {"synthetic": True, "kind": "empty_model_response_nudge"}
                 next_state = build_continue_state(state, messages=[*working_messages, nudge_message], transition=transition)
@@ -1313,7 +1314,7 @@ class QueryLoop:
                         "type": "llm_retry",
                         "attempt": int(event.get("attempt") or 0),
                         "max_attempts": int(event.get("max_attempts") or 0),
-                        "message_text": str(event.get("message_text") or "模型服务暂时不可用，正在自动重试。"),
+                        "message_text": str(event.get("message_text") or "Dịch vụ mô hình tạm thời không khả dụng, đang tự động thử lại."),
                         "error_type": str(event.get("error_type") or "").strip() or None,
                     }
                     )
@@ -1413,7 +1414,7 @@ class QueryLoop:
         user_message = str((event or {}).get("user_message") or "").strip()
         raw_error = str((event or {}).get("error") or "").strip()
         if user_message and raw_error and raw_error != user_message:
-            return f"{user_message} 原始错误：{raw_error}"
+            return f"{user_message} Lỗi gốc: {raw_error}"
         return user_message or raw_error or "Streaming failed"
 
     @staticmethod

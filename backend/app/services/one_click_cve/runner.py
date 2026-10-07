@@ -141,7 +141,7 @@ def _format_exception_message(exc: Exception) -> str:
 
 def _one_click_agent_timeout_message(timeout_seconds: int) -> str:
     minutes = max(1, int(round(timeout_seconds / 60)))
-    return f"Agent审计任务超时：在一键CVE中单个项目审计时间超过{minutes}分钟，已停止"
+    return f"Nhiệm vụ Agent Audit đã hết thời gian: một dự án trong One-click CVE chạy quá {minutes} phút nên đã bị dừng"
 
 
 def _monotonic_seconds() -> float:
@@ -155,13 +155,13 @@ async def run_one_click_cve_batch(batch_id: str) -> None:
             return
         try:
             if batch.status == OneClickCveBatchStatus.CANCELLED:
-                await _finish_batch(db, batch, status=OneClickCveBatchStatus.CANCELLED, step="用户已取消")
+                await _finish_batch(db, batch, status=OneClickCveBatchStatus.CANCELLED, step="Người dùng đã hủy")
                 return
             await _mark_batch_preflight(db, batch)
             await _preflight_one_click_cve_llm(db, str(batch.user_id))
             await db.refresh(batch)
             if batch.status == OneClickCveBatchStatus.CANCELLED:
-                await _finish_batch(db, batch, status=OneClickCveBatchStatus.CANCELLED, step="用户已取消")
+                await _finish_batch(db, batch, status=OneClickCveBatchStatus.CANCELLED, step="Người dùng đã hủy")
                 return
             await _mark_batch_running(db, batch)
             token = await _github_token_for_user(db, batch.user_id)
@@ -180,13 +180,13 @@ async def run_one_click_cve_batch(batch_id: str) -> None:
                 prefer_security_advisory=prefer_security_advisory,
             )
             if not candidates:
-                await _finish_batch(db, batch, status=OneClickCveBatchStatus.EXHAUSTED, step="未找到符合条件的 GitHub 项目")
+                await _finish_batch(db, batch, status=OneClickCveBatchStatus.EXHAUSTED, step="Không tìm thấy dự án GitHub phù hợp")
                 return
 
             for candidate in candidates:
                 await db.refresh(batch)
                 if batch.status == OneClickCveBatchStatus.CANCELLED:
-                    await _finish_batch(db, batch, status=OneClickCveBatchStatus.CANCELLED, step="用户已取消")
+                    await _finish_batch(db, batch, status=OneClickCveBatchStatus.CANCELLED, step="Người dùng đã hủy")
                     return
                 if int(batch.found_count or 0) >= int(batch.requested_count):
                     break
@@ -202,13 +202,13 @@ async def run_one_click_cve_batch(batch_id: str) -> None:
                 db,
                 batch,
                 status=final_status,
-                step="已达到目标漏洞数量" if final_status == OneClickCveBatchStatus.COMPLETED else "候选项目已扫描完毕",
+                step="Đã đạt số lượng lỗ hổng mục tiêu" if final_status == OneClickCveBatchStatus.COMPLETED else "Đã kiểm tra hết các dự án ứng viên",
             )
         except OneClickCveBatchCancelled:
             await db.rollback()
             fresh = await db.get(OneClickCveBatch, batch_id)
             if fresh is not None:
-                await _finish_batch(db, fresh, status=OneClickCveBatchStatus.CANCELLED, step="用户已取消")
+                await _finish_batch(db, fresh, status=OneClickCveBatchStatus.CANCELLED, step="Người dùng đã hủy")
         except Exception as exc:
             await db.rollback()
             fresh = await db.get(OneClickCveBatch, batch_id)
@@ -217,9 +217,9 @@ async def run_one_click_cve_batch(batch_id: str) -> None:
                 fresh.error_message = _format_exception_message(exc)
                 fresh.completed_at = datetime.now(timezone.utc)
                 fresh.current_step = (
-                    "检测到共享模型或基础设施故障，已停止整个一键 CVE"
+                    "Phát hiện lỗi mô hình dùng chung hoặc hạ tầng, đã dừng toàn bộ One-click CVE"
                     if isinstance(exc, OneClickCveFatalAuditError)
-                    else "一键CVE执行失败"
+                    else "One-click CVE chạy thất bại"
                 )
                 await db.commit()
 
@@ -227,7 +227,7 @@ async def run_one_click_cve_batch(batch_id: str) -> None:
 async def _mark_batch_preflight(db: AsyncSession, batch: OneClickCveBatch) -> None:
     batch.status = OneClickCveBatchStatus.RUNNING
     batch.started_at = batch.started_at or datetime.now(timezone.utc)
-    batch.current_step = "正在测试模型连通性"
+    batch.current_step = "Đang kiểm tra kết nối mô hình"
     await db.commit()
     await db.refresh(batch)
 
@@ -240,8 +240,8 @@ async def _preflight_one_click_cve_llm(db: AsyncSession, user_id: str) -> None:
 
     await llm_service.chat_completion(
         messages=[
-            {"role": "system", "content": "你是模型连通性测试助手，请简短回复。"},
-            {"role": "user", "content": "请只回复：一键 CVE 模型连接成功。"},
+            {"role": "system", "content": "Bạn là trợ lý kiểm tra kết nối mô hình. Hãy trả lời ngắn gọn bằng tiếng Việt."},
+            {"role": "user", "content": "Chỉ trả lời: Kết nối mô hình One-click CVE thành công."},
         ],
         max_tokens=32,
         agent_type=ONE_CLICK_CVE_PREFLIGHT_AGENT,
@@ -268,7 +268,7 @@ async def _cancel_agent_task_for_batch_cancellation(db: AsyncSession, task_id: s
 async def _mark_batch_running(db: AsyncSession, batch: OneClickCveBatch) -> None:
     batch.status = OneClickCveBatchStatus.RUNNING
     batch.started_at = batch.started_at or datetime.now(timezone.utc)
-    batch.current_step = "正在从 GitHub 搜索候选项目"
+    batch.current_step = "Đang tìm dự án ứng viên trên GitHub"
     await db.commit()
     await db.refresh(batch)
 
@@ -312,14 +312,14 @@ async def _audit_candidate(db: AsyncSession, batch: OneClickCveBatch, candidate:
     db.add(item)
     if await _has_existing_managed_version(db, user_id, candidate.repository_url, candidate.version_label):
         item.status = OneClickCveProjectStatus.SKIPPED
-        item.error_message = "已存在相同项目链接和版本的漏洞管理记录，跳过审计"
-        batch.current_step = f"跳过 {candidate.full_name} {candidate.version_label}"
+        item.error_message = "Đã có bản ghi quản lý lỗ hổng cho cùng URL dự án và phiên bản, bỏ qua kiểm tra"
+        batch.current_step = f"Bỏ qua {candidate.full_name} {candidate.version_label}"
         await db.commit()
         await _refresh_batch_summary(db, batch)
         await db.commit()
         return
 
-    batch.current_step = f"正在导入 {candidate.full_name}"
+    batch.current_step = f"Đang nhập {candidate.full_name}"
     await db.commit()
     await db.refresh(item)
     item_id = str(item.id)
@@ -329,7 +329,7 @@ async def _audit_candidate(db: AsyncSession, batch: OneClickCveBatch, candidate:
         await _raise_if_batch_cancelled(db, batch_id)
         item.project_id = project.id
         item.status = OneClickCveProjectStatus.AUDITING
-        batch.current_step = f"正在审计 {candidate.full_name}"
+        batch.current_step = f"Đang kiểm tra {candidate.full_name}"
         await db.commit()
 
         task = await _create_agent_task(db, project=project, user_id=user_id, candidate=candidate, batch_id=batch_id)
@@ -361,7 +361,7 @@ async def _audit_candidate(db: AsyncSession, batch: OneClickCveBatch, candidate:
             item_ref.status = OneClickCveProjectStatus.CANCELLED
             item_ref.error_message = "Cancelled by one-click CVE batch cancellation"
         if batch_ref is not None:
-            batch_ref.current_step = "用户已取消"
+            batch_ref.current_step = "Người dùng đã hủy"
         await db.commit()
         raise
     except Exception as exc:
@@ -383,9 +383,9 @@ async def _audit_candidate(db: AsyncSession, batch: OneClickCveBatch, candidate:
             item_ref.error_message = failure_message
         if batch_ref is not None:
             batch_ref.current_step = (
-                f"{candidate.full_name} 审计遇到全局故障，已停止一键 CVE"
+                f"{candidate.full_name}: kiểm tra gặp lỗi toàn cục, đã dừng One-click CVE"
                 if is_fatal_one_click_cve_error(runtime_error_kind, failure_message)
-                else f"{candidate.full_name} 审计失败，继续下一个候选项目"
+                else f"{candidate.full_name}: kiểm tra thất bại, tiếp tục với dự án ứng viên tiếp theo"
             )
         await db.commit()
         if is_fatal_one_click_cve_error(runtime_error_kind, failure_message):
@@ -446,7 +446,7 @@ async def _create_agent_task(
     task = AgentTask(
         id=str(uuid4()),
         project_id=project.id,
-        name=f"一键CVE - {candidate.full_name}",
+        name=f"One-click CVE - {candidate.full_name}",
         description="Automatically launched by one-click CVE discovery.",
         status=AgentTaskStatus.PENDING,
         current_phase=AgentTaskPhase.PLANNING,

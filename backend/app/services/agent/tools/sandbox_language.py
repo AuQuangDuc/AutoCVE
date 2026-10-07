@@ -1,6 +1,6 @@
 """
 多语言代码测试工具
-支持 PHP, Python, JavaScript, Java, Go, Ruby 等语言的沙箱测试
+Hỗ trợ PHP, Python, JavaScript, Java, Go, Ruby 等语言的沙箱测试
 """
 
 import asyncio
@@ -124,7 +124,7 @@ class BaseLanguageTestTool(AgentTool):
         if not self.sandbox_manager.is_available:
             return ToolResult(
                 success=False,
-                error="沙箱环境不可用 (Docker Unavailable)",
+                error="Sandbox không khả dụng (Docker Unavailable)",
             )
 
         # 获取代码
@@ -133,13 +133,13 @@ class BaseLanguageTestTool(AgentTool):
             if code is None:
                 return ToolResult(
                     success=False,
-                    error=f"文件不存在: {file_path}",
+                    error=f"Tệp không tồn tại: {file_path}",
                 )
 
         if not code:
             return ToolResult(
                 success=False,
-                error="必须提供 code 或 file_path",
+                error="Phải cung cấp code hoặc file_path",
             )
 
         # 构建包装代码
@@ -155,7 +155,7 @@ class BaseLanguageTestTool(AgentTool):
             env=env_vars,
         )
 
-        # 分析结果
+        # Kết quả phân tích
         analysis = self._analyze_output(result, params)
 
         # 格式化输出
@@ -208,7 +208,7 @@ class PhpTestTool(BaseLanguageTestTool):
 
     @property
     def description(self) -> str:
-        return """在沙箱中测试 PHP 代码，支持模拟 $_GET/$_POST/$_REQUEST 参数。
+        return """在沙箱中测试 PHP 代码，Hỗ trợ模拟 $_GET/$_POST/$_REQUEST 参数。
 
 输入:
 - code: PHP 代码（与 file_path 二选一）
@@ -275,7 +275,7 @@ class PythonTestTool(BaseLanguageTestTool):
 
     @property
     def description(self) -> str:
-        return """在沙箱中测试 Python 代码，支持模拟 Flask/Django 请求参数。
+        return """在沙箱中测试 Python 代码，Hỗ trợ模拟 Flask/Django 请求参数。
 
 输入:
 - code: Python 代码（与 file_path 二选一）
@@ -389,15 +389,15 @@ class MockRequest:
             logger.warning(f"Sandbox init failed: {e}")
 
         if not self.sandbox_manager.is_available:
-            return ToolResult(success=False, error="沙箱环境不可用")
+            return ToolResult(success=False, error="Sandbox không khả dụng")
 
         if file_path:
             code = self._read_file(file_path)
             if code is None:
-                return ToolResult(success=False, error=f"文件不存在: {file_path}")
+                return ToolResult(success=False, error=f"Tệp không tồn tại: {file_path}")
 
         if not code:
-            return ToolResult(success=False, error="必须提供 code 或 file_path")
+            return ToolResult(success=False, error="Phải cung cấp code hoặc file_path")
 
         wrapped_code = self._build_wrapper_code(code, params, flask_mode, django_mode)
         command = self._build_command(wrapped_code)
@@ -464,7 +464,7 @@ class JavaScriptTestTool(BaseLanguageTestTool):
 
     @property
     def description(self) -> str:
-        return """在沙箱中测试 JavaScript/Node.js 代码，支持模拟 Express.js 请求。
+        return """在沙箱中测试 JavaScript/Node.js 代码，Hỗ trợ模拟 Express.js 请求。
 
 输入:
 - code: JavaScript 代码（与 file_path 二选一）
@@ -539,15 +539,15 @@ const res = {{
             logger.warning(f"Sandbox init failed: {e}")
 
         if not self.sandbox_manager.is_available:
-            return ToolResult(success=False, error="沙箱环境不可用")
+            return ToolResult(success=False, error="Sandbox không khả dụng")
 
         if file_path:
             code = self._read_file(file_path)
             if code is None:
-                return ToolResult(success=False, error=f"文件不存在: {file_path}")
+                return ToolResult(success=False, error=f"Tệp không tồn tại: {file_path}")
 
         if not code:
-            return ToolResult(success=False, error="必须提供 code 或 file_path")
+            return ToolResult(success=False, error="Phải cung cấp code hoặc file_path")
 
         wrapped_code = self._build_wrapper_code(code, params, express_mode)
         command = self._build_command(wrapped_code)
@@ -606,7 +606,7 @@ class JavaTestTool(BaseLanguageTestTool):
 
     @property
     def description(self) -> str:
-        return """在沙箱中测试 Java 代码，支持模拟 Servlet 请求参数。
+        return """在沙箱中测试 Java 代码，Hỗ trợ模拟 Servlet 请求参数。
 
 输入:
 - code: Java 代码（与 file_path 二选一）
@@ -671,15 +671,15 @@ public class Test {{
             logger.warning(f"Sandbox init failed: {e}")
 
         if not self.sandbox_manager.is_available:
-            return ToolResult(success=False, error="沙箱环境不可用")
+            return ToolResult(success=False, error="Sandbox không khả dụng")
 
         if file_path:
             code = self._read_file(file_path)
             if code is None:
-                return ToolResult(success=False, error=f"文件不存在: {file_path}")
+                return ToolResult(success=False, error=f"Tệp không tồn tại: {file_path}")
 
         if not code:
-            return ToolResult(success=False, error="必须提供 code 或 file_path")
+            return ToolResult(success=False, error="Phải cung cấp code hoặc file_path")
 
         wrapped_code = self._build_wrapper_code(code, params)
         command = self._build_command(wrapped_code)
@@ -807,15 +807,15 @@ func main() {{
             logger.warning(f"Sandbox init failed: {e}")
 
         if not self.sandbox_manager.is_available:
-            return ToolResult(success=False, error="沙箱环境不可用")
+            return ToolResult(success=False, error="Sandbox không khả dụng")
 
         if file_path:
             code = self._read_file(file_path)
             if code is None:
-                return ToolResult(success=False, error=f"文件不存在: {file_path}")
+                return ToolResult(success=False, error=f"Tệp không tồn tại: {file_path}")
 
         if not code:
-            return ToolResult(success=False, error="必须提供 code 或 file_path")
+            return ToolResult(success=False, error="Phải cung cấp code hoặc file_path")
 
         wrapped_code = self._build_wrapper_code(code, params)
         command = self._build_command(wrapped_code)
@@ -878,7 +878,7 @@ class RubyTestTool(BaseLanguageTestTool):
 
     @property
     def description(self) -> str:
-        return """在沙箱中测试 Ruby 代码，支持模拟 Rails 请求参数。
+        return """在沙箱中测试 Ruby 代码，Hỗ trợ模拟 Rails 请求参数。
 
 输入:
 - code: Ruby 代码（与 file_path 二选一）
@@ -957,15 +957,15 @@ request = Request.new(params)
             logger.warning(f"Sandbox init failed: {e}")
 
         if not self.sandbox_manager.is_available:
-            return ToolResult(success=False, error="沙箱环境不可用")
+            return ToolResult(success=False, error="Sandbox không khả dụng")
 
         if file_path:
             code = self._read_file(file_path)
             if code is None:
-                return ToolResult(success=False, error=f"文件不存在: {file_path}")
+                return ToolResult(success=False, error=f"Tệp không tồn tại: {file_path}")
 
         if not code:
-            return ToolResult(success=False, error="必须提供 code 或 file_path")
+            return ToolResult(success=False, error="Phải cung cấp code hoặc file_path")
 
         wrapped_code = self._build_wrapper_code(code, params, rails_mode)
         command = self._build_command(wrapped_code)
@@ -1100,9 +1100,9 @@ class UniversalCodeTestTool(AgentTool):
 
     @property
     def description(self) -> str:
-        return """通用多语言代码测试工具，支持 PHP, Python, JavaScript, Java, Go, Ruby, Shell。
+        return """通用多语言代码测试工具，Hỗ trợ PHP, Python, JavaScript, Java, Go, Ruby, Shell。
 
-自动根据语言选择合适的测试环境，支持各种框架的请求模拟。
+自动根据语言选择合适的测试环境，Hỗ trợ各种框架的请求模拟。
 
 输入:
 - language: 编程语言 (php, python, javascript, java, go, ruby, shell)
@@ -1138,7 +1138,7 @@ class UniversalCodeTestTool(AgentTool):
         if not tester:
             return ToolResult(
                 success=False,
-                error=f"不支持的语言: {language}。支持: {list(self._testers.keys())}",
+                error=f"Ngôn ngữ không được hỗ trợ: {language}。Hỗ trợ: {list(self._testers.keys())}",
             )
 
         # 构建测试参数

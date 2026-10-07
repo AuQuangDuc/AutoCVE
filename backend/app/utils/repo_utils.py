@@ -20,7 +20,7 @@ def parse_repository_url(repo_url: str, repo_type: str) -> Dict[str, str]:
         ValueError: If the URL is invalid or schema/domain check fails.
     """
     if not repo_url:
-        raise ValueError(f"{repo_type} 仓库 URL 不能为空")
+        raise ValueError(f"URL kho mã {repo_type} không được để trống")
 
     # Basic sanitization
     repo_url = repo_url.strip()
@@ -28,7 +28,7 @@ def parse_repository_url(repo_url: str, repo_type: str) -> Dict[str, str]:
     # Check scheme to prevent SSRF (only allow http and https)
     parsed = urlparse(repo_url)
     if parsed.scheme not in ('http', 'https'):
-         raise ValueError(f"{repo_type} 仓库 URL 必须使用 http 或 https 协议")
+         raise ValueError(f"URL kho mã {repo_type} phải sử dụng giao thức http hoặc https")
 
     # Remove .git suffix if present
     path = parsed.path.strip('/')
@@ -37,7 +37,7 @@ def parse_repository_url(repo_url: str, repo_type: str) -> Dict[str, str]:
 
     path_parts = path.split('/')
     if len(path_parts) < 2:
-        raise ValueError(f"{repo_type} 仓库 URL 格式错误")
+        raise ValueError(f"URL kho mã {repo_type} không đúng định dạng")
 
     base = f"{parsed.scheme}://{parsed.netloc}"
 
@@ -66,7 +66,7 @@ def parse_repository_url(repo_url: str, repo_type: str) -> Dict[str, str]:
         api_base = f"{base}/api/v1"
 
     else:
-        raise ValueError(f"不支持的仓库类型: {repo_type}")
+        raise ValueError(f"Không hỗ trợ loại kho mã: {repo_type}")
 
     return {
         "base_url": api_base,

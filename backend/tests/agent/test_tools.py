@@ -53,7 +53,7 @@ class TestFileTools:
         result = await tool.execute(file_path="nonexistent.py")
         
         assert result.success is False
-        assert "不存在" in result.error or "not found" in result.error.lower()
+        assert "không tồn tại" in result.error.lower() or "not found" in result.error.lower()
     
     @pytest.mark.asyncio
     async def test_file_read_tool_path_traversal_blocked(self, temp_project_dir):
@@ -63,7 +63,7 @@ class TestFileTools:
         result = await tool.execute(file_path="../../../etc/passwd")
         
         assert result.success is False
-        assert "安全" in result.error or "security" in result.error.lower()
+        assert "bảo mật" in result.error.lower() or "security" in result.error.lower()
     
     @pytest.mark.asyncio
     async def test_file_search_tool(self, temp_project_dir):

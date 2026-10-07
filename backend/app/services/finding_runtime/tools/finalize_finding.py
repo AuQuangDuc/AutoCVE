@@ -70,8 +70,8 @@ class FinalizeFindingTool(RuntimeTool):
             validation_errors = format_validation_errors(parsed_input.validation_error)
             return ToolExecutionPayload(
                 content=(
-                    "FinalizeFinding 已拒绝本次提交，因为最终漏洞结论不是完整的结构化对象。"
-                    "请继续调用工具补齐缺失字段，然后再次调用 FinalizeFinding。"
+                    "FinalizeFinding đã từ chối lần gửi này vì kết luận lỗ hổng cuối chưa phải đối tượng có cấu trúc đầy đủ. "
+                    "Hãy tiếp tục dùng công cụ để bổ sung các trường còn thiếu rồi gọi lại FinalizeFinding."
                 ),
                 output_payload={
                     "finalization_rejected": True,

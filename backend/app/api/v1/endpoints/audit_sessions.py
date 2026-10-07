@@ -526,9 +526,9 @@ async def queue_runtime_session_resume(
         session.runtime_state_json = runtime_state
         if task is not None:
             task.status = "failed"
-            task.error_message = f"继续审计任务入队失败：{exc}"
+            task.error_message = f"Không thể đưa nhiệm vụ tiếp tục kiểm tra vào hàng đợi: {exc}"
         if batch_project is not None:
-            message = "继续审计队列不可用，已停止整个一键 CVE"
+            message = "Hàng đợi tiếp tục kiểm tra không khả dụng; đã dừng toàn bộ One-click CVE"
             batch_project.status = OneClickCveProjectStatus.FAILED
             batch_project.error_message = message
             batch_project.updated_at_local = datetime.now(timezone.utc)

@@ -262,7 +262,7 @@ export const ReportExportDialog = memo(function ReportExportDialog({
     [reportTemplates, selectedTemplateId]
   );
 
-  const taskName = task?.name || (task ? `Agent Task ${task.id.slice(0, 8)}` : "审计任务");
+  const taskName = task?.name || (task ? `Agent Task ${task.id.slice(0, 8)}` : "Nhiệm vụ kiểm tra");
   const totalFindings = task?.findings_count ?? findings.length;
   const criticalAndHigh = (task?.critical_count || 0) + (task?.high_count || 0);
   const verifiedCount = task?.verified_count || findings.filter((finding) => finding.is_verified).length;
@@ -276,14 +276,14 @@ export const ReportExportDialog = memo(function ReportExportDialog({
 
   const generateHtmlReport = useCallback(async (markdown: string, currentTask: AgentTask) => {
     const contentHtml = await marked.parse(markdown);
-    const generatedAt = new Date().toLocaleString("zh-CN");
+    const generatedAt = new Date().toLocaleString("vi-VN");
     const htmlTaskName = currentTask.name || `Task ${currentTask.id.slice(0, 8)}`;
     return `<!doctype html>
-<html lang="zh-CN">
+<html lang="vi">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AutoCVE 审计报告 - ${htmlTaskName}</title>
+  <title>Báo cáo kiểm tra AutoCVE - ${htmlTaskName}</title>
   <style>
     body { margin: 0; background: #f8fafc; color: #0f172a; font: 15px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     .shell { max-width: 960px; margin: 0 auto; padding: 40px 24px; }
@@ -303,7 +303,7 @@ export const ReportExportDialog = memo(function ReportExportDialog({
   <div class="shell">
     <header>
       <h1>${htmlTaskName}</h1>
-      <div class="meta">AutoCVE 审计报告 · ${generatedAt}</div>
+      <div class="meta">Báo cáo kiểm tra AutoCVE · ${generatedAt}</div>
     </header>
     <main>${contentHtml}</main>
   </div>

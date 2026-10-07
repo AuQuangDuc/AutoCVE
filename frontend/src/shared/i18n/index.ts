@@ -3,35 +3,38 @@ import { initReactI18next } from "react-i18next";
 
 import { resources } from "./resources";
 
-export type SupportedLanguage = "zh" | "en";
+export type SupportedLanguage = "vi" | "en" | "zh";
 
 export const LANGUAGE_STORAGE_KEY = "autocve.language";
 
 function isSupportedLanguage(value: string | null): value is SupportedLanguage {
-  return value === "zh" || value === "en";
+  return value === "vi" || value === "en" || value === "zh";
 }
 
 function getInitialLanguage(): SupportedLanguage {
   if (typeof window === "undefined") {
-    return "zh";
+    return "vi";
   }
 
   const storedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
-  return isSupportedLanguage(storedLanguage) ? storedLanguage : "zh";
+  return isSupportedLanguage(storedLanguage) ? storedLanguage : "vi";
 }
 
 void i18n.use(initReactI18next).init({
   resources,
   lng: getInitialLanguage(),
-  fallbackLng: "zh",
-  supportedLngs: ["zh", "en"],
+  fallbackLng: "vi",
+  supportedLngs: ["vi", "en", "zh"],
   interpolation: {
     escapeValue: false,
   },
 });
 
 export function getCurrentLanguage(): SupportedLanguage {
-  return i18n.language === "en" ? "en" : "zh";
+  if (i18n.language === "en" || i18n.language === "zh") {
+    return i18n.language;
+  }
+  return "vi";
 }
 
 export async function setAppLanguage(language: SupportedLanguage) {

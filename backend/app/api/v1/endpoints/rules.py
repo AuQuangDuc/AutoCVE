@@ -36,9 +36,9 @@ router = APIRouter()
 async def list_rule_sets(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
-    language: Optional[str] = Query(None, description="语言过滤"),
-    rule_type: Optional[str] = Query(None, description="类型过滤"),
-    is_active: Optional[bool] = Query(None, description="是否启用"),
+    language: Optional[str] = Query(None, description="Lọc theo ngôn ngữ"),
+    rule_type: Optional[str] = Query(None, description="Lọc theo loại"),
+    is_active: Optional[bool] = Query(None, description="Có bật hay không"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(deps.get_current_user),
 ) -> Any:
@@ -146,10 +146,10 @@ async def get_rule_set(
     rule_set = result.scalar_one_or_none()
     
     if not rule_set:
-        raise HTTPException(status_code=404, detail="规则集不存在")
+        raise HTTPException(status_code=404, detail="Bộ quy tắc không tồn tại")
     
     if not rule_set.is_system and rule_set.created_by != current_user.id:
-        raise HTTPException(status_code=403, detail="无权访问此规则集")
+        raise HTTPException(status_code=403, detail="Không có quyền truy cập bộ quy tắc này")
     
     severity_weights = {"critical": 10, "high": 5, "medium": 2, "low": 1}
     if rule_set.severity_weights:
@@ -297,17 +297,17 @@ async def update_rule_set(
     rule_set = result.scalar_one_or_none()
     
     if not rule_set:
-        raise HTTPException(status_code=404, detail="规则集不存在")
+        raise HTTPException(status_code=404, detail="Bộ quy tắc không tồn tại")
     
     if rule_set.is_system:
-        # 系统规则集只能修改启用状态
+        # 系统规则集只能修改Bật状态
         if rule_set_in.is_active is not None:
             rule_set.is_active = rule_set_in.is_active
         else:
-            raise HTTPException(status_code=403, detail="系统规则集不允许修改")
+            raise HTTPException(status_code=403, detail="Không được phép sửa bộ quy tắc hệ thống")
     else:
         if rule_set.created_by != current_user.id:
-            raise HTTPException(status_code=403, detail="无权修改此规则集")
+            raise HTTPException(status_code=403, detail="Không có quyền sửa bộ quy tắc này")
         
         update_data = rule_set_in.dict(exclude_unset=True)
         for field, value in update_data.items():
@@ -379,18 +379,18 @@ async def delete_rule_set(
     rule_set = result.scalar_one_or_none()
     
     if not rule_set:
-        raise HTTPException(status_code=404, detail="规则集不存在")
+        raise HTTPException(status_code=404, detail="Bộ quy tắc không tồn tại")
     
     if rule_set.is_system:
-        raise HTTPException(status_code=403, detail="系统规则集不允许删除")
+        raise HTTPException(status_code=403, detail="Không được phép xóa bộ quy tắc hệ thống")
     
     if rule_set.created_by != current_user.id:
-        raise HTTPException(status_code=403, detail="无权删除此规则集")
+        raise HTTPException(status_code=403, detail="Không có quyền xóa bộ quy tắc này")
     
     await db.delete(rule_set)
     await db.commit()
     
-    return {"message": "规则集已删除"}
+    return {"message": "Đã xóa bộ quy tắc"}
 
 
 @router.get("/{rule_set_id}/export")
@@ -408,10 +408,10 @@ async def export_rule_set(
     rule_set = result.scalar_one_or_none()
     
     if not rule_set:
-        raise HTTPException(status_code=404, detail="规则集不存在")
+        raise HTTPException(status_code=404, detail="Bộ quy tắc không tồn tại")
     
     if not rule_set.is_system and rule_set.created_by != current_user.id:
-        raise HTTPException(status_code=403, detail="无权导出此规则集")
+        raise HTTPException(status_code=403, detail="Không có quyền xuất bộ quy tắc này")
     
     severity_weights = {"critical": 10, "high": 5, "medium": 2, "low": 1}
     if rule_set.severity_weights:
@@ -553,13 +553,13 @@ async def add_rule_to_set(
     rule_set = result.scalar_one_or_none()
     
     if not rule_set:
-        raise HTTPException(status_code=404, detail="规则集不存在")
+        raise HTTPException(status_code=404, detail="Bộ quy tắc không tồn tại")
     
     if rule_set.is_system:
-        raise HTTPException(status_code=403, detail="系统规则集不允许添加规则")
+        raise HTTPException(status_code=403, detail="Không được phép thêm quy tắc vào bộ quy tắc hệ thống")
     
     if rule_set.created_by != current_user.id:
-        raise HTTPException(status_code=403, detail="无权修改此规则集")
+        raise HTTPException(status_code=403, detail="Không có quyền sửa bộ quy tắc này")
     
     rule = AuditRule(
         rule_set_id=rule_set_id,
@@ -612,13 +612,13 @@ async def update_rule(
     rule_set = result.scalar_one_or_none()
     
     if not rule_set:
-        raise HTTPException(status_code=404, detail="规则集不存在")
+        raise HTTPException(status_code=404, detail="Bộ quy tắc không tồn tại")
     
     if rule_set.is_system:
-        raise HTTPException(status_code=403, detail="系统规则集不允许修改规则")
+        raise HTTPException(status_code=403, detail="Không được phép sửa quy tắc thuộc bộ quy tắc hệ thống")
     
     if rule_set.created_by != current_user.id:
-        raise HTTPException(status_code=403, detail="无权修改此规则集")
+        raise HTTPException(status_code=403, detail="Không có quyền sửa bộ quy tắc này")
     
     result = await db.execute(
         select(AuditRule).where(
@@ -629,7 +629,7 @@ async def update_rule(
     rule = result.scalar_one_or_none()
     
     if not rule:
-        raise HTTPException(status_code=404, detail="规则不存在")
+        raise HTTPException(status_code=404, detail="Quy tắc không tồn tại")
     
     update_data = rule_in.dict(exclude_unset=True)
     for field, value in update_data.items():
@@ -670,13 +670,13 @@ async def delete_rule(
     rule_set = result.scalar_one_or_none()
     
     if not rule_set:
-        raise HTTPException(status_code=404, detail="规则集不存在")
+        raise HTTPException(status_code=404, detail="Bộ quy tắc không tồn tại")
     
     if rule_set.is_system:
-        raise HTTPException(status_code=403, detail="系统规则集不允许删除规则")
+        raise HTTPException(status_code=403, detail="Không được phép xóa quy tắc thuộc bộ quy tắc hệ thống")
     
     if rule_set.created_by != current_user.id:
-        raise HTTPException(status_code=403, detail="无权修改此规则集")
+        raise HTTPException(status_code=403, detail="Không có quyền sửa bộ quy tắc này")
     
     result = await db.execute(
         select(AuditRule).where(
@@ -687,12 +687,12 @@ async def delete_rule(
     rule = result.scalar_one_or_none()
     
     if not rule:
-        raise HTTPException(status_code=404, detail="规则不存在")
+        raise HTTPException(status_code=404, detail="Quy tắc không tồn tại")
     
     await db.delete(rule)
     await db.commit()
     
-    return {"message": "规则已删除"}
+    return {"message": "Đã xóa quy tắc"}
 
 
 @router.put("/{rule_set_id}/rules/{rule_id}/toggle")
@@ -702,18 +702,18 @@ async def toggle_rule(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(deps.get_current_user),
 ) -> Any:
-    """切换规则启用状态"""
+    """切换规则Bật状态"""
     result = await db.execute(
         select(AuditRuleSet).where(AuditRuleSet.id == rule_set_id)
     )
     rule_set = result.scalar_one_or_none()
     
     if not rule_set:
-        raise HTTPException(status_code=404, detail="规则集不存在")
+        raise HTTPException(status_code=404, detail="Bộ quy tắc không tồn tại")
     
-    # 系统规则集也允许切换单个规则的启用状态
+    # 系统规则集也允许切换单个规则的Bật状态
     if not rule_set.is_system and rule_set.created_by != current_user.id:
-        raise HTTPException(status_code=403, detail="无权修改此规则集")
+        raise HTTPException(status_code=403, detail="Không có quyền sửa bộ quy tắc này")
     
     result = await db.execute(
         select(AuditRule).where(
@@ -724,9 +724,9 @@ async def toggle_rule(
     rule = result.scalar_one_or_none()
     
     if not rule:
-        raise HTTPException(status_code=404, detail="规则不存在")
+        raise HTTPException(status_code=404, detail="Quy tắc không tồn tại")
     
     rule.enabled = not rule.enabled
     await db.commit()
     
-    return {"enabled": rule.enabled, "message": f"规则已{'启用' if rule.enabled else '禁用'}"}
+    return {"enabled": rule.enabled, "message": f"Quy tắc đã {'Bật' if rule.enabled else 'Tắt'}"}

@@ -242,15 +242,15 @@ async def scan_zip(
     # Verify project exists
     project = await db.get(Project, project_id)
     if not project:
-        raise HTTPException(status_code=404, detail="项目不存在")
+        raise HTTPException(status_code=404, detail="Dự án không tồn tại")
     
     # 检查权限：只有项目所有者可以上传
     if project.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="无权操作此项目")
+        raise HTTPException(status_code=403, detail="Không có quyền thao tác trên dự án này")
     
     # Validate file
     if not file.filename.lower().endswith('.zip'):
-        raise HTTPException(status_code=400, detail="请上传ZIP格式文件")
+        raise HTTPException(status_code=400, detail="Vui lòng tải tệp định dạng ZIP")
         
     # Save Uploaded File to temp
     file_id = str(uuid.uuid4())
@@ -262,7 +262,7 @@ async def scan_zip(
     file_size = os.path.getsize(file_path)
     if file_size > 500 * 1024 * 1024:  # 500MB limit
         os.remove(file_path)
-        raise HTTPException(status_code=400, detail="文件大小不能超过500MB")
+        raise HTTPException(status_code=400, detail="Kích thước tệp không được vượt quá 500MB")
     
     # 保存ZIP文件到持久化存储
     await save_project_zip(project_id, file_path, file.filename)
@@ -328,16 +328,16 @@ async def scan_stored_zip(
     # Verify project exists
     project = await db.get(Project, project_id)
     if not project:
-        raise HTTPException(status_code=404, detail="项目不存在")
+        raise HTTPException(status_code=404, detail="Dự án không tồn tại")
     
     # 检查权限：只有项目所有者可以扫描
     if project.owner_id != current_user.id:
-        raise HTTPException(status_code=403, detail="无权操作此项目")
+        raise HTTPException(status_code=403, detail="Không có quyền thao tác trên dự án này")
     
     # 检查是否有存储的ZIP文件
     stored_zip_path = await load_project_zip(project_id)
     if not stored_zip_path:
-        raise HTTPException(status_code=400, detail="项目没有已存储的ZIP文件，请先上传")
+        raise HTTPException(status_code=400, detail="Dự án chưa có tệp ZIP đã lưu, vui lòng tải lên trước")
     
     # Create Task
     task = AuditTask(
@@ -462,7 +462,7 @@ async def instant_analysis(
         print(f"❌ 即时分析失败: {error_msg}")
         raise HTTPException(
             status_code=500, 
-            detail=f"代码分析失败: {error_msg}"
+            detail=f"Phân tích mã nguồn thất bại: {error_msg}"
         )
     
     end_time = datetime.now(timezone.utc)
@@ -525,12 +525,12 @@ async def delete_instant_analysis(
     analysis = result.scalar_one_or_none()
     
     if not analysis:
-        raise HTTPException(status_code=404, detail="分析记录不存在")
+        raise HTTPException(status_code=404, detail="Bản ghi phân tích không tồn tại")
     
     await db.delete(analysis)
     await db.commit()
     
-    return {"message": "删除成功"}
+    return {"message": "Xóa thành công"}
 
 
 @router.delete("/instant/history")
@@ -548,7 +548,7 @@ async def delete_all_instant_analyses(
     )
     await db.commit()
     
-    return {"message": "已清空所有历史记录"}
+    return {"message": "Đã xóa toàn bộ lịch sử"}
 
 
 @router.get("/instant/history/{analysis_id}/report/pdf")
@@ -572,7 +572,7 @@ async def export_instant_report_pdf(
     analysis = result.scalar_one_or_none()
     
     if not analysis:
-        raise HTTPException(status_code=404, detail="分析记录不存在")
+        raise HTTPException(status_code=404, detail="Bản ghi phân tích không tồn tại")
     
     # 解析分析结果
     try:

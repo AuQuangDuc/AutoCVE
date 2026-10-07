@@ -30,8 +30,8 @@ router = APIRouter()
 async def list_prompt_templates(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=100),
-    template_type: Optional[str] = Query(None, description="模板类型过滤"),
-    is_active: Optional[bool] = Query(None, description="是否启用"),
+    template_type: Optional[str] = Query(None, description="Lọc theo loại mẫu"),
+    is_active: Optional[bool] = Query(None, description="Có bật hay không"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(deps.get_current_user),
 ) -> Any:
@@ -108,11 +108,11 @@ async def get_prompt_template(
     template = result.scalar_one_or_none()
     
     if not template:
-        raise HTTPException(status_code=404, detail="模板不存在")
+        raise HTTPException(status_code=404, detail="Mẫu không tồn tại")
     
     # 检查权限
     if not template.is_system and template.created_by != current_user.id:
-        raise HTTPException(status_code=403, detail="无权访问此模板")
+        raise HTTPException(status_code=403, detail="Không có quyền truy cập mẫu này")
     
     variables = {}
     if template.variables:
@@ -196,18 +196,18 @@ async def update_prompt_template(
     template = result.scalar_one_or_none()
     
     if not template:
-        raise HTTPException(status_code=404, detail="模板不存在")
+        raise HTTPException(status_code=404, detail="Mẫu không tồn tại")
     
-    # 系统模板不允许修改核心内容，只能修改启用状态
+    # Không được phép sửa mẫu hệ thống核心内容，只能修改Bật状态
     if template.is_system:
         if template_in.is_active is not None:
             template.is_active = template_in.is_active
         else:
-            raise HTTPException(status_code=403, detail="系统模板不允许修改")
+            raise HTTPException(status_code=403, detail="Không được phép sửa mẫu hệ thống")
     else:
         # 检查权限
         if template.created_by != current_user.id:
-            raise HTTPException(status_code=403, detail="无权修改此模板")
+            raise HTTPException(status_code=403, detail="Không có quyền sửa mẫu này")
         
         # 更新字段
         update_data = template_in.dict(exclude_unset=True)
@@ -258,18 +258,18 @@ async def delete_prompt_template(
     template = result.scalar_one_or_none()
     
     if not template:
-        raise HTTPException(status_code=404, detail="模板不存在")
+        raise HTTPException(status_code=404, detail="Mẫu không tồn tại")
     
     if template.is_system:
-        raise HTTPException(status_code=403, detail="系统模板不允许删除")
+        raise HTTPException(status_code=403, detail="Không được phép xóa mẫu hệ thống")
     
     if template.created_by != current_user.id:
-        raise HTTPException(status_code=403, detail="无权删除此模板")
+        raise HTTPException(status_code=403, detail="Không có quyền xóa mẫu này")
     
     await db.delete(template)
     await db.commit()
     
-    return {"message": "模板已删除"}
+    return {"message": "Đã xóa mẫu"}
 
 
 @router.post("/test", response_model=PromptTestResponse)
@@ -345,7 +345,7 @@ async def set_default_template(
 ) -> Any:
     """设置默认模板（仅管理员）"""
     if not current_user.is_superuser:
-        raise HTTPException(status_code=403, detail="仅管理员可设置默认模板")
+        raise HTTPException(status_code=403, detail="Chỉ quản trị viên mới có thể đặt mẫu mặc định")
     
     result = await db.execute(
         select(PromptTemplate).where(PromptTemplate.id == template_id)
@@ -353,7 +353,7 @@ async def set_default_template(
     template = result.scalar_one_or_none()
     
     if not template:
-        raise HTTPException(status_code=404, detail="模板不存在")
+        raise HTTPException(status_code=404, detail="Mẫu không tồn tại")
     
     # 取消同类型的其他默认模板
     await db.execute(
@@ -375,4 +375,4 @@ async def set_default_template(
     
     await db.commit()
     
-    return {"message": "已设置为默认模板"}
+    return {"message": "Đã đặt làm mẫu mặc định"}

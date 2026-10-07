@@ -6,7 +6,7 @@ from xml.sax.saxutils import escape
 from zipfile import ZIP_DEFLATED, ZipFile
 
 
-HEADERS = ["scan_id", "path_id", "Vulnerability", "Type", "URL", "AI判断", "AI判断原因"]
+HEADERS = ["scan_id", "path_id", "Vulnerability", "Type", "URL", "AI đánh giá", "Lý do AI đánh giá"]
 
 
 def _column_name(index: int) -> str:
@@ -44,7 +44,7 @@ def _format_ai_judgement(value: Any) -> str:
         return "True"
     if value is False:
         return "False"
-    return "未知"
+    return "Không rõ"
 
 
 def build_results_workbook(results: list[dict[str, Any]]) -> bytes:

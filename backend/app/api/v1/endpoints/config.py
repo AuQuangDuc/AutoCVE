@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 from copy import deepcopy
@@ -159,12 +159,12 @@ class LLMConnectionTestRequest(BaseModel):
     topP: Optional[float] = Field(default=None, ge=0, le=1)
     endpointProtocol: Optional[str] = None
     toolMessageFormat: Optional[str] = None
-    prompt: str = "请只回复：模型连接成功。"
+    prompt: str = "Chỉ trả lời: Kết nối mô hình thành công."
 
 
 class AgentModelTestRequest(BaseModel):
     agent_type: str
-    prompt: str = "请介绍你当前加载到的 Skills，并说明你最适合执行什么任务。"
+    prompt: str = "Hãy giới thiệu các Skills hiện đang được nạp và cho biết bạn phù hợp nhất với loại nhiệm vụ nào. Trả lời bằng tiếng Việt."
     include_skills: bool = True
     agent_model_config: Optional[AgentModelConfigSchema] = None
     messages: list[dict[str, str]] = Field(default_factory=list)
@@ -593,13 +593,13 @@ async def test_llm_connection(
         llm_service = LLMService(user_config=test_user_config)
         result = await llm_service.chat_completion(
             messages=[
-                {"role": "system", "content": "你是模型连通性测试助手，请简短回复。"},
+                {"role": "system", "content": "Bạn là trợ lý kiểm tra kết nối mô hình. Hãy trả lời ngắn gọn bằng tiếng Việt."},
                 {"role": "user", "content": payload.prompt},
             ]
         )
         return {
             "success": True,
-            "message": "模型连接成功",
+            "message": "Kết nối mô hình thành công",
             "provider": llm_service.config.provider.value,
             "model": llm_service.config.model,
             "response": result.get("content", ""),
@@ -615,7 +615,7 @@ async def test_agent_model(
     current_user: User = Depends(deps.get_current_user),
 ) -> Any:
     if payload.agent_type not in AGENT_TYPES:
-        raise HTTPException(status_code=400, detail="不支持的 Agent 类型")
+        raise HTTPException(status_code=400, detail="Loại Agent không được hỗ trợ")
 
     record = await _get_user_config_record(db, current_user.id)
     merged = _merge_user_config(record)
@@ -645,11 +645,11 @@ async def test_agent_model(
         skill_briefing = SkillService.build_skill_briefing(skill_context)
 
     system_prompt = (
-        f"你正在测试 {payload.agent_type} Agent 的模型配置。"
-        "请像真实 Agent 一样回答，并明确区分："
-        "1）你当前扮演的 Agent；"
-        "2）你现在只掌握了哪些 Skills 元数据；"
-        "3）如果需要完整 Skill 正文或扩展资源，你会调用哪个工具。"
+        f"Bạn đang kiểm tra cấu hình mô hình của Agent {payload.agent_type}. "
+        "Hãy trả lời bằng tiếng Việt như Agent thực tế và phân biệt rõ: "
+        "1) vai trò Agent hiện tại; "
+        "2) metadata Skills mà bạn đang có; "
+        "3) công cụ sẽ gọi nếu cần đọc đầy đủ nội dung Skill hoặc tài nguyên mở rộng."
     )
 
     try:

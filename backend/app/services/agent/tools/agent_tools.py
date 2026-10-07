@@ -48,7 +48,7 @@ class CreateSubAgentTool(AgentTool):
     允许Agent动态创建专业化的子Agent来处理特定任务。
     子Agent可以加载特定的知识模块，专注于特定领域。
     
-    支持两种模式：
+    Hỗ trợ两种模式：
     1. 仅创建：创建Agent但不执行，后续可以批量执行
     2. 立即执行：创建并立即执行Agent，等待结果返回
     """
@@ -126,10 +126,10 @@ class CreateSubAgentTool(AgentTool):
         """创建子Agent"""
         
         if not name or not name.strip():
-            return ToolResult(success=False, error="Agent名称不能为空")
+            return ToolResult(success=False, error="Tên Agent không được để trống")
         
         if not task or not task.strip():
-            return ToolResult(success=False, error="任务描述不能为空")
+            return ToolResult(success=False, error="Mô tả nhiệm vụ không được để trống")
         
         # 解析知识模块
         modules = []
@@ -138,7 +138,7 @@ class CreateSubAgentTool(AgentTool):
             if len(modules) > 5:
                 return ToolResult(
                     success=False,
-                    error="知识模块数量不能超过5个"
+                    error="Số mô-đun tri thức không được vượt quá 5"
                 )
         
         # 验证知识模块（如果有）
@@ -149,7 +149,7 @@ class CreateSubAgentTool(AgentTool):
                 available = knowledge_loader.get_all_module_names()
                 return ToolResult(
                     success=False,
-                    error=f"无效的知识模块: {validation['invalid']}。可用模块: {', '.join(available)}"
+                    error=f"Mô-đun tri thức không hợp lệ: {validation['invalid']}。Mô-đun khả dụng: {', '.join(available)}"
                 )
         
         # 生成Agent ID
@@ -196,7 +196,7 @@ class CreateSubAgentTool(AgentTool):
                 return ToolResult(
                     success=exec_result.get("success", False),
                     data={
-                        "message": f"子Agent '{name}' 已执行完成" if exec_result.get("success") else f"子Agent '{name}' 执行失败",
+                        "message": f"Sub-agent '{name}' đã hoàn tất" if exec_result.get("success") else f"Sub-agent '{name}' thất bại",
                         "agent_id": agent_id,
                         "execution_result": exec_result,
                         "findings": exec_result.get("data", {}).get("findings", []) if exec_result.get("success") else [],
@@ -210,7 +210,7 @@ class CreateSubAgentTool(AgentTool):
         return ToolResult(
             success=True,
             data={
-                "message": f"子Agent '{name}' 已创建",
+                "message": f"Đã tạo sub-agent '{name}'",
                 "agent_id": agent_id,
                 "agent_info": {
                     "id": agent_id,
@@ -285,17 +285,17 @@ class SendMessageTool(AgentTool):
         """发送消息"""
         
         if not target_agent_id:
-            return ToolResult(success=False, error="目标Agent ID不能为空")
+            return ToolResult(success=False, error="ID Agent đích không được để trống")
         
         if not message or not message.strip():
-            return ToolResult(success=False, error="消息内容不能为空")
+            return ToolResult(success=False, error="Nội dung tin nhắn không được để trống")
         
         # 检查目标Agent是否存在
         target_node = agent_registry.get_agent_node(target_agent_id)
         if not target_node:
             return ToolResult(
                 success=False,
-                error=f"目标Agent '{target_agent_id}' 不存在"
+                error=f"Agent đích '{target_agent_id}' không tồn tại"
             )
         
         # 转换消息类型
@@ -321,7 +321,7 @@ class SendMessageTool(AgentTool):
         return ToolResult(
             success=True,
             data={
-                "message": f"消息已发送到 '{target_node['name']}'",
+                "message": f"Đã gửi tin nhắn tới '{target_node['name']}'",
                 "message_id": sent_message.id,
                 "target_agent": {
                     "id": target_agent_id,
@@ -411,7 +411,7 @@ class WaitForMessageTool(AgentTool):
     
     async def _execute(
         self,
-        reason: str = "等待消息",
+        reason: str = "Đang chờ tin nhắn",
         **kwargs
     ) -> ToolResult:
         """进入等待状态"""
@@ -427,12 +427,12 @@ class WaitForMessageTool(AgentTool):
             success=True,
             data={
                 "status": "waiting",
-                "message": f"Agent正在等待: {reason}",
+                "message": f"Agent đang chờ: {reason}",
                 "agent_id": self.agent_id,
                 "resume_conditions": [
-                    "收到其他Agent的消息",
-                    "收到用户消息",
-                    "等待超时",
+                    "Nhận tin nhắn từ Agent khác",
+                    "Nhận tin nhắn từ người dùng",
+                    "Hết thời gian chờ",
                 ],
             },
         )
@@ -494,7 +494,7 @@ class AgentFinishTool(AgentTool):
         if not parent_id:
             return ToolResult(
                 success=False,
-                error="此工具只能由子Agent使用。根Agent请使用finish_scan。"
+                error="Công cụ này chỉ dành cho sub-agent. Agent gốc hãy dùng finish_scan."
             )
         
         # 更新状态
@@ -550,7 +550,7 @@ class RunSubAgentsTool(AgentTool):
     """
     批量执行子Agent工具
     
-    执行已创建的子Agent，支持并行执行
+    执行已创建的子Agent，Hỗ trợ并行执行
     """
     
     def __init__(
@@ -595,7 +595,7 @@ class RunSubAgentsTool(AgentTool):
         """批量执行子Agent"""
         
         if not agent_ids:
-            return ToolResult(success=False, error="Agent ID列表不能为空")
+            return ToolResult(success=False, error="Danh sách ID Agent không được để trống")
         
         # 验证所有Agent存在且是当前Agent的子Agent
         valid_agents = []
@@ -612,7 +612,7 @@ class RunSubAgentsTool(AgentTool):
         if not valid_agents:
             return ToolResult(
                 success=False,
-                error="没有找到可执行的子Agent"
+                error="Không tìm thấy sub-agent có thể thực thi"
             )
         
         # 构建执行任务
@@ -669,7 +669,7 @@ class RunSubAgentsTool(AgentTool):
         return ToolResult(
             success=result.success,
             data={
-                "message": f"执行完成: {result.completed_agents}/{result.total_agents} 成功",
+                "message": f"Thực thi hoàn tất: {result.completed_agents}/{result.total_agents} Agent thành công",
                 "total_agents": result.total_agents,
                 "completed": result.completed_agents,
                 "failed": result.failed_agents,
@@ -729,7 +729,7 @@ class CollectSubAgentResultsTool(AgentTool):
             return ToolResult(
                 success=True,
                 data={
-                    "message": "没有子Agent",
+                    "message": "Không có sub-agent",
                     "children_count": 0,
                     "findings": [],
                 }
@@ -773,7 +773,7 @@ class CollectSubAgentResultsTool(AgentTool):
         return ToolResult(
             success=True,
             data={
-                "message": f"收集完成: {completed} 完成, {failed} 失败, {running} 运行中",
+                "message": f"Thu thập hoàn tất: {completed} hoàn thành, {failed} thất bại, {running} đang chạy",
                 "children_count": len(children),
                 "completed": completed,
                 "failed": failed,

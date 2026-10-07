@@ -142,7 +142,7 @@ class SmartScanTool(AgentTool):
 - 自动识别高风险文件
 - 批量检测多种漏洞模式
 - 按严重程度汇总结果
-- 支持快速模式和完整模式
+- Hỗ trợ快速模式和完整模式
 
 使用示例:
 - 快速全面扫描: {"target": ".", "quick_mode": true}
@@ -178,7 +178,7 @@ class SmartScanTool(AgentTool):
         if not files_to_scan:
             return ToolResult(
                 success=True,
-                data=f"在目标 '{target}' 中未找到可扫描的文件",
+                data=f"Không tìm thấy tệp có thể quét trong mục tiêu '{target}'",
                 metadata={"files_scanned": 0}
             )
         
@@ -222,7 +222,7 @@ class SmartScanTool(AgentTool):
             'coverage', '.pytest_cache', '.mypy_cache',
         }
         
-        # 支持的代码文件扩展名
+        # Hỗ trợ的代码文件扩展名
         code_extensions = {
             '.py', '.js', '.ts', '.jsx', '.tsx', '.java', '.php',
             '.go', '.rb', '.cs', '.c', '.cpp', '.h', '.hpp',
@@ -274,7 +274,7 @@ class SmartScanTool(AgentTool):
         file_path: str,
         focus_vulnerabilities: Optional[List[str]] = None
     ) -> List[Dict[str, Any]]:
-        """扫描单个文件"""
+        """扫描单tệp"""
         full_path = os.path.join(self.project_root, file_path)
         
         try:
@@ -441,7 +441,7 @@ class QuickAuditTool(AgentTool):
     """
     快速文件审计工具
     
-    对单个文件进行全面的安全审计，包括：
+    对单tệp进行全面的安全审计，包括：
     - 模式匹配
     - 上下文分析
     - 风险评估
@@ -458,7 +458,7 @@ class QuickAuditTool(AgentTool):
     
     @property
     def description(self) -> str:
-        return """🎯 快速文件审计工具 - 对单个文件进行全面安全分析
+        return """🎯 快速文件审计工具 - 对单tệp进行全面安全分析
 
 当 smart_scan 发现高风险文件后，使用此工具进行深入审计。
 
@@ -491,20 +491,20 @@ class QuickAuditTool(AgentTool):
         
         # 安全检查
         if not os.path.normpath(full_path).startswith(os.path.normpath(self.project_root)):
-            return ToolResult(success=False, error="安全错误：路径越界")
+            return ToolResult(success=False, error="Lỗi bảo mật: đường dẫn vượt phạm vi cho phép")
         
         if not os.path.exists(full_path):
-            return ToolResult(success=False, error=f"文件不存在: {file_path}")
+            return ToolResult(success=False, error=f"Tệp không tồn tại: {file_path}")
         
         try:
             with open(full_path, 'r', encoding='utf-8', errors='ignore') as f:
                 content = f.read()
         except Exception as e:
-            return ToolResult(success=False, error=f"读取文件失败: {str(e)}")
+            return ToolResult(success=False, error=f"Không thể đọc tệp: {str(e)}")
         
         lines = content.split('\n')
         
-        # 分析结果
+        # Kết quả phân tích
         audit_result = {
             "file_path": file_path,
             "total_lines": len(lines),
